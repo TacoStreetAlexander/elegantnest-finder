@@ -1,0 +1,229 @@
+
+import mapboxgl from 'mapbox-gl';
+import { Property } from '../../types/property';
+import { createMarkerElement, createPropertyPopup } from './markerCreation';
+import { isValidCoordinate } from './coordinateUtils';
+import { createMarkerClusters } from './clusterUtils';
+
+/**
+ * Adds property markers to the map
+ */
+export const addPropertyMarkers = (
+  map: mapboxgl.Map,
+  properties: Property[],
+  onPropertySelect: (id: number) => void,
+  selectedPropertyId?: number | null
+): {
+  markers: { [key: number]: mapboxgl.Marker };
+  popups: { [key: number]: mapboxgl.Popup };
+  bounds: mapboxgl.LngLatBounds;
+} => {
+  const markers: { [key: number]: mapboxgl.Marker } = {};
+  const popups: { [key: number]: mapboxgl.Popup } = {};
+  const bounds = new mapboxgl.LngLatBounds();
+  
+  console.log(`Adding markers for ${properties.length} properties`);
+  
+  // Validate map is available and loaded
+  if (!map) {
+    console.error('Map is not available for adding markers');
+    return { markers, popups, bounds };
+  }
+  
+  if (!map.loaded()) {
+    console.warn('Map not fully loaded, deferring marker creation');
+    return { markers, popups, bounds };
+  }
+  
+  let validPropertiesCount = 0;
+  
+  // Try to create clusters if many properties
+  if (properties.length > 15) {
+    try {
+      // Only create clusters if map is loaded and ready
+      createMarkerClusters(map);
+    } catch (err) {
+      console.error('Error creating clusters:', err);
+    }
+  }
+  
+  // First pass - calculate valid bounds to ensure we're not trying to fit invalid coordinates
+  properties.forEach(property => {
+    // Skip properties without coordinates
+    if (!property.longitude || !property.latitude) {
+      return;
+    }
+    
+    // Convert latitude and longitude to numbers if they're strings
+    const lat = typeof property.latitude === 'string' ? parseFloat(property.latitude) : property.latitude;
+    const lng = typeof property.longitude === 'string' ? parseFloat(property.longitude) : property.longitude;
+    
+    if (isValidCoordinate(lat, lng)) {
+      bounds.extend([lng, lat]);
+      validPropertiesCount++;
+    }
+  });
+  
+  // Second pass - create markers only for properties with valid coordinates
+  properties.forEach(property => {
+    // Skip properties without coordinates
+    if (!property.longitude || !property.latitude) {
+      console.warn(`Missing coordinates for property ${property.id}`);
+      return;
+    }
+    
+    // Convert latitude and longitude to numbers if they're strings
+    const lat = typeof property.latitude === 'string' ? parseFloat(property.latitude) : property.latitude;
+    const lng = typeof property.longitude === 'string' ? parseFloat(property.longitude) : property.longitude;
+    
+    // Skip invalid coordinates to prevent map errors
+    if (!isValidCoordinate(lat, lng)) {
+      console.warn(`Invalid coordinates for property ${property.id}: [${lng}, ${lat}]`);
+      return;
+    }
+    
+    // Create marker element with selected state if applicable
+    const isSelected = selectedPropertyId === property.id;
+    const el = createMarkerElement(property, isSelected);
+    
+    // Create popup
+    const popup = createPropertyPopup(property);
+    
+    // Add marker to map
+    const marker = new mapboxgl.Marker(el)
+      .setLngLat([lng, lat])
+      .setPopup(popup)
+      .addTo(map);
+    
+    // Store marker and popup references
+    markers[property.id] = marker;
+    popups[property.id] = popup;
+    
+    // Add click event to marker
+    el.addEventListener('click', () => {
+      // When marker is clicked, select property
+      onPropertySelect(property.id);
+    });
+    
+    // Add hover effects
+    el.addEventListener('mouseenter', () => {
+      if (!isSelected) {
+        el.style.transform = 'scale(1.1)';
+        popup.addTo(map);
+      }
+    });
+    
+    el.addEventListener('mouseleave', () => {
+      if (!isSelected) {
+        el.style.transform = 'scale(1)';
+        popup.remove();
+      }
+    });
+  });
+  
+  console.log(`Added ${validPropertiesCount} valid markers out of ${properties.length} properties`);
+  
+  return { markers, popups, bounds };
+};
+
+/**
+ * Updates a marker to show selected state
+ */
+export const updateMarkerState = (
+  marker: mapboxgl.Marker,
+  isSelected: boolean
+): void => {
+  const element = marker.getElement();
+  
+  if (isSelected) {
+    element.style.filter = 'drop-shadow(0 0 8px rgba(205, 144, 50, 0.8))';
+    element.style.transform = 'scale(1.2)';
+    element.style.zIndex = '10';
+  } else {
+    element.style.filter = '';
+    element.style.transform = '';
+    element.style.zIndex = '';
+  }
+};
+
+/**
+ * Animates the marker bouncing effect
+ */
+export const bounceMarker = (marker: mapboxgl.Marker): void => {
+  const element = marker.getElement();
+  
+  element.animate([
+    { transform: 'translateY(0)' },
+    { transform: 'translateY(-20px)' },
+    { transform: 'translateY(0)' }
+  ], {
+    duration: 500,
+    iterations: 1
+  });
+};
+
+/**
+ * Centers and zooms the map to a specific marker
+ */
+export const focusOnMarker = (
+  map: mapboxgl.Map,
+  marker: mapboxgl.Marker
+): void => {
+  // Get marker location
+  const lngLat = marker.getLngLat();
+  
+  // Check if map is ready
+  if (!map || !map.loaded()) {
+    console.warn('Map not ready for focus');
+    return;
+  }
+  
+  // Fly to marker location
+  map.flyTo({
+    center: lngLat,
+    zoom: 14,
+    essential: true,
+    duration: 1000
+  });
+  
+  // Bounce the marker
+  bounceMarker(marker);
+};
+
+/**
+ * Fits the map to show all markers within the bounds
+ */
+export const fitMapToBounds = (
+  map: mapboxgl.Map, 
+  bounds: mapboxgl.LngLatBounds,
+  isMobile: boolean
+): void => {
+  // Check if map is ready
+  if (!map || !map.loaded()) {
+    console.warn('Map not ready for fitting bounds');
+    return;
+  }
+  
+  if (!bounds.isEmpty()) {
+    // Add some padding to ensure all markers are visible
+    const boundsPadding = isMobile ? 50 : 100;
+    
+    try {
+      map.fitBounds(bounds, {
+        padding: boundsPadding,
+        maxZoom: 15,
+        duration: 1000
+      });
+    } catch (err) {
+      console.error('Error fitting bounds:', err);
+      // Fallback to default center if fitBounds fails
+      map.setCenter([-97.7431, 30.2672]);
+      map.setZoom(4);
+    }
+  } else {
+    // If no valid coordinates, center on a default location
+    map.setCenter([-97.7431, 30.2672]); // Default to Austin, TX
+    map.setZoom(4); // Zoom out to show more area
+    console.warn('No valid coordinates found in properties. Using default center.');
+  }
+};
