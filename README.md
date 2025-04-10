@@ -1,69 +1,98 @@
-# Welcome to your Lovable project
+# ElegantNest Finder
 
-## Project info
+ElegantNest Finder is a modern web application designed to help seniors and their families find the perfect living community that matches their needs, preferences, and lifestyle. The platform provides a user-friendly interface to explore, compare, and connect with various senior living communities.
 
-**URL**: https://lovable.dev/projects/8645d29c-59e5-4238-a458-580c07e54085
+## 🏠 Project Overview
 
-## How can I edit this code?
+ElegantNest Finder aims to simplify the process of finding senior living communities by providing:
+- Comprehensive community profiles
+- Advanced search and filtering capabilities
+- Detailed amenities and services information
+- Location-based search with interactive maps
+- User reviews and ratings
+- Easy contact and inquiry system
 
-There are several ways of editing your application.
+## 🛠️ Technical Stack
 
-**Use Lovable**
+The project is built using modern web technologies:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8645d29c-59e5-4238-a458-580c07e54085) and start prompting.
+- **Frontend Framework**: React with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS with Shadcn UI components
+- **State Management**: React Query
+- **Database**: Supabase
+- **Maps Integration**: Mapbox GL
+- **Form Handling**: React Hook Form with Zod validation
+- **Routing**: React Router DOM
+- **UI Components**: Radix UI primitives with custom styling
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📁 Project Structure
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+src/
+├── components/     # Reusable UI components
+├── pages/         # Page components and routes
+├── lib/           # Utility functions and configurations
+├── hooks/         # Custom React hooks
+├── types/         # TypeScript type definitions
+├── utils/         # Helper functions
+├── integrations/  # Third-party service integrations
+├── data/          # Static data and constants
+├── App.tsx        # Main application component
+└── main.tsx       # Application entry point
 ```
 
-**Edit a file directly in GitHub**
+## 🚀 Getting Started
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. **Clone the repository**
+   ```bash
+   git clone [repository-url]
+   cd elegantnest-finder
+   ```
 
-**Use GitHub Codespaces**
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+3. **Set up environment variables**
+   Create a `.env` file in the root directory with the following variables:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_MAPBOX_TOKEN=your_mapbox_token
+   ```
 
-## What technologies are used for this project?
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-This project is built with .
+5. **Build for production**
+   ```bash
+   npm run build
+   ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🎯 Features
 
-## How can I deploy this project?
+- **Advanced Search**: Filter communities by location, amenities, care levels, and more
+- **Interactive Maps**: Visualize community locations with Mapbox integration
+- **Detailed Profiles**: Comprehensive information about each community
+- **User Reviews**: Read and write reviews about communities
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Accessibility**: Built with accessibility in mind for all users
 
-Simply open [Lovable](https://lovable.dev/projects/8645d29c-59e5-4238-a458-580c07e54085) and click on Share -> Publish.
+## 🤝 Contributing
 
-## I want to use a custom domain - is that possible?
+We welcome contributions! Please feel free to submit issues and pull requests.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Shadcn UI for the component library
+- Supabase for the backend infrastructure
+- Mapbox for mapping services
+- All contributors and maintainers
