@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { Property } from '../../types/property';
 import PropertyMapView from './PropertyMapView';
 import MapLoadingIndicator from './MapLoadingIndicator';
@@ -14,19 +14,18 @@ interface PropertyMapProps {
 }
 
 const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }: PropertyMapProps) => {
-  const [isComponentMounted, setIsComponentMounted] = useState(false);
+  // Use a ref instead of state to prevent re-renders
+  const isMountedRef = useRef(false);
   const isMobile = useIsMobile();
   
-  // Set component as mounted after a small delay to ensure DOM is ready
+  // Set component as mounted immediately
   useEffect(() => {
     console.log('PropertyMapWrapper component mounted');
-    const timer = setTimeout(() => {
-      setIsComponentMounted(true);
-      console.log('Setting component as mounted');
-    }, 500);
+    // Set mounted immediately instead of using a timeout
+    isMountedRef.current = true;
     
     return () => {
-      clearTimeout(timer);
+      isMountedRef.current = false;
       console.log('PropertyMapWrapper component unmounted');
     };
   }, []);
@@ -41,7 +40,7 @@ const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }
       properties={properties}
       selectedPropertyId={selectedPropertyId}
       onPropertySelect={onPropertySelect}
-      isComponentMounted={isComponentMounted}
+      isComponentMounted={isMountedRef.current}
       isMobile={isMobile}
     />
   );

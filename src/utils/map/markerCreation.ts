@@ -1,4 +1,3 @@
-
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
 
@@ -80,30 +79,47 @@ export const createMarkerElement = (property: Property, isSelected: boolean = fa
  * Creates a marker popup with property information
  */
 export const createPropertyPopup = (property: Property): mapboxgl.Popup => {
-  // Helper functions to generate floor plan info
-  const hasStudioPlan = property.floorPlans.some(plan => 
-    plan.name.toLowerCase().includes('studio') || 
-    (plan.bedrooms === 0 && plan.name.toLowerCase().includes('studio')));
+  // Ensure floorPlans exists and is an array
+  const floorPlans = property.floorPlans || [];
   
-  const has1BedPlan = property.floorPlans.some(plan => 
-    plan.bedrooms === 1 || plan.name.toLowerCase().includes('1 bed'));
+  // Helper functions to generate floor plan info - safely check for floor plans
+  const hasStudioPlan = floorPlans.some(plan => 
+    plan && plan.name && plan.name.toLowerCase().includes('studio') || 
+    (plan && plan.bedrooms === 0 && plan.name && plan.name.toLowerCase().includes('studio')));
   
-  const has2BedPlan = property.floorPlans.some(plan => 
-    plan.bedrooms === 2 || plan.name.toLowerCase().includes('2 bed'));
+  const has1BedPlan = floorPlans.some(plan => 
+    plan && (plan.bedrooms === 1 || (plan.name && plan.name.toLowerCase().includes('1 bed'))));
   
-  const has3BedPlan = property.floorPlans.some(plan => 
-    plan.bedrooms === 3 || plan.name.toLowerCase().includes('3 bed'));
+  const has2BedPlan = floorPlans.some(plan => 
+    plan && (plan.bedrooms === 2 || (plan.name && plan.name.toLowerCase().includes('2 bed'))));
+  
+  const has3BedPlan = floorPlans.some(plan => 
+    plan && (plan.bedrooms === 3 || (plan.name && plan.name.toLowerCase().includes('3 bed'))));
 
-  // Get starting price for each floor plan type
+  // Get starting price for each floor plan type - with improved error handling
   const getStartingPrice = (bedrooms: number) => {
-    const plans = property.floorPlans.filter(plan => 
-      plan.bedrooms === bedrooms || 
-      (bedrooms === 0 && plan.name.toLowerCase().includes('studio')));
-    
-    if (plans.length === 0) return null;
-    
-    const prices = plans.map(plan => plan.price);
-    return Math.min(...prices);
+    try {
+      const plans = floorPlans.filter(plan => 
+        plan && (
+          plan.bedrooms === bedrooms || 
+          (bedrooms === 0 && plan.name && plan.name.toLowerCase().includes('studio'))
+        )
+      );
+      
+      if (plans.length === 0) return null;
+      
+      // Filter out any undefined or non-numeric prices
+      const prices = plans
+        .map(plan => plan.price)
+        .filter(price => price !== undefined && price !== null && !isNaN(price));
+      
+      if (prices.length === 0) return null;
+      
+      return Math.min(...prices);
+    } catch (error) {
+      console.error(`Error getting starting price for ${bedrooms} bedrooms:`, error);
+      return null;
+    }
   };
 
   const studioPrice = getStartingPrice(0);
@@ -111,8 +127,11 @@ export const createPropertyPopup = (property: Property): mapboxgl.Popup => {
   const bed2Price = getStartingPrice(2);
   const bed3Price = getStartingPrice(3);
   
-  // Format price
-  const formatPrice = (price: number) => price.toLocaleString();
+  // Format price - with null check
+  const formatPrice = (price: number | null) => {
+    if (price === null || isNaN(price)) return 'Call';
+    return price.toLocaleString();
+  };
   
   // Generate floor plan HTML
   let floorPlanHTML = '';
@@ -133,6 +152,19 @@ export const createPropertyPopup = (property: Property): mapboxgl.Popup => {
     floorPlanHTML += `<div class="text-xs mb-1">3BR from $${formatPrice(bed3Price)}</div>`;
   }
   
+  // If no floor plan HTML was generated, show a default message
+  if (!floorPlanHTML) {
+    floorPlanHTML = '<div class="text-xs mb-1">Contact for pricing</div>';
+  }
+  
+  // Safely access property fields with fallbacks
+  const propertyName = property.name || 'Property';
+  const propertyCity = property.city || '';
+  const propertyState = property.state || '';
+  const locationText = propertyCity && propertyState 
+    ? `${propertyCity}, ${propertyState}` 
+    : propertyCity || propertyState || 'Location unavailable';
+  
   return new mapboxgl.Popup({ 
     offset: 25,
     closeButton: false,
@@ -140,8 +172,8 @@ export const createPropertyPopup = (property: Property): mapboxgl.Popup => {
   })
     .setHTML(`
       <div class="p-3">
-        <h3 class="font-bold text-sm mb-1">${property.name}</h3>
-        <p class="text-xs text-gray-600 mb-2">${property.city}, ${property.state}</p>
+        <h3 class="font-bold text-sm mb-1">${propertyName}</h3>
+        <p class="text-xs text-gray-600 mb-2">${locationText}</p>
         ${floorPlanHTML}
         <a href="/properties/${property.id}" class="block text-xs bg-primary text-primary-foreground py-1 px-2 rounded text-center mt-2">
           View Details

@@ -1,5 +1,5 @@
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, memo } from 'react';
 import { Property } from '../../types/property';
 import { useMapInitialization } from '../../hooks/map';
 import MapContainer from './MapContainer';
@@ -16,7 +16,8 @@ interface PropertyMapViewProps {
   isMobile: boolean;
 }
 
-const PropertyMapView = ({ 
+// Use memo to prevent unnecessary re-renders
+const PropertyMapView = memo(({ 
   properties, 
   selectedPropertyId, 
   onPropertySelect,
@@ -25,7 +26,7 @@ const PropertyMapView = ({
 }: PropertyMapViewProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
-  const [mapRenderAttempts, setMapRenderAttempts] = useState(0);
+  const mapRenderAttemptsRef = useRef(0); // Use ref instead of state to avoid re-renders
   
   // Use our map initialization hook
   const { map, mapLoaded, mapError, isInitializing, updateMapboxToken } = useMapInitialization(
@@ -46,15 +47,17 @@ const PropertyMapView = ({
   
   // Force re-render if map fails to load after 5 seconds
   useEffect(() => {
-    if (isInitializing && !mapLoaded && mapRenderAttempts < 3) {
+    if (isInitializing && !mapLoaded && mapRenderAttemptsRef.current < 3) {
       const timer = setTimeout(() => {
         console.log('Map load timeout - retrying initialization');
-        setMapRenderAttempts(prev => prev + 1);
+        mapRenderAttemptsRef.current += 1;
+        // Force re-render without state update
+        mapContainer.current?.setAttribute('data-retry', String(mapRenderAttemptsRef.current));
       }, 5000);
       
       return () => clearTimeout(timer);
     }
-  }, [isInitializing, mapLoaded, mapRenderAttempts]);
+  }, [isInitializing, mapLoaded]);
   
   // Hide loading indicator when map is loaded
   useEffect(() => {
@@ -102,6 +105,9 @@ const PropertyMapView = ({
       {!isMobile && mapLoaded && <MapLegend />}
     </MapContainer>
   );
-};
+});
+
+// Add display name for better debugging
+PropertyMapView.displayName = 'PropertyMapView';
 
 export default PropertyMapView;

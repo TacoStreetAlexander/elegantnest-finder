@@ -129,19 +129,26 @@ export const useMapInitialization = (
   
   // Separate cleanup effect to prevent map from being removed during re-renders
   useEffect(() => {
+    // Store the current map instance for cleanup
+    const currentMapInstance = mapInstance.current;
+    
     return () => {
       // Only clean up the map when the component is unmounting
-      if (mapInstance.current) {
+      // Check if the current instance is still the same as when the effect was created
+      if (currentMapInstance && currentMapInstance === mapInstance.current) {
         console.log("Cleaning up map instance on unmount");
-        mapInstance.current.remove();
+        currentMapInstance.remove();
         mapInstance.current = null;
         setMapLoaded(false);
       }
     };
   }, []);
   
+  // Prevent unnecessary re-renders by stabilizing the return value
+  const stableMap = mapInstance.current;
+  
   return { 
-    map: mapInstance.current, 
+    map: stableMap, 
     mapLoaded, 
     mapError, 
     isInitializing,

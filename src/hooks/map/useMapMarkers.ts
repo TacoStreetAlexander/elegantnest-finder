@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
@@ -60,9 +59,18 @@ export const useMapMarkers = ({
 
   // Track properties changes with refs to optimize rerenders
   useEffect(() => {
+    // Safely extract IDs, handling potential undefined properties
+    const getPropertyIds = (props: Property[]) => {
+      return props.map(p => p?.id).filter(id => id !== undefined);
+    };
+    
+    // Compare current and previous properties
+    const currentIds = getPropertyIds(properties);
+    const previousIds = getPropertyIds(propertiesRef.current);
+    
     const propertiesChanged = 
       properties.length !== propertiesRef.current.length || 
-      JSON.stringify(properties.map(p => p.id)) !== JSON.stringify(propertiesRef.current.map(p => p.id));
+      JSON.stringify(currentIds) !== JSON.stringify(previousIds);
     
     if (propertiesChanged) {
       propertiesRef.current = properties;
@@ -77,7 +85,7 @@ export const useMapMarkers = ({
       return false;
     }
     
-    if (properties.length === 0) {
+    if (!properties || properties.length === 0) {
       console.log('No properties available for markers');
       return false;
     }
@@ -105,8 +113,24 @@ export const useMapMarkers = ({
   
   // Add markers when properties change and map is loaded
   useEffect(() => {
-    // Skip if no map or markers already added
-    if (!map || hasAddedMarkers) {
+    // Skip if no map
+    if (!map) {
+      return;
+    }
+    
+    // Safely extract IDs, handling potential undefined properties
+    const getPropertyIds = (props: Property[]) => {
+      return props.map(p => p?.id).filter(id => id !== undefined);
+    };
+    
+    // Compare current and previous properties
+    const currentIds = getPropertyIds(properties);
+    const previousIds = getPropertyIds(propertiesRef.current);
+    
+    // Skip if markers already added and properties haven't changed
+    if (hasAddedMarkers && 
+        properties.length === propertiesRef.current.length && 
+        JSON.stringify(currentIds) === JSON.stringify(previousIds)) {
       return;
     }
     
