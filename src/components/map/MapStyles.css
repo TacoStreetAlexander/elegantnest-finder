@@ -10,6 +10,19 @@
   position: absolute !important; /* Ensure absolute positioning */
 }
 
+/* Add a larger hit area for the marker */
+.marker::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: transparent;
+  border-radius: 50%;
+  z-index: -1;
+}
+
 .marker:hover {
   z-index: 10;
 }
@@ -37,17 +50,32 @@
 }
 
 .bridge-bottom {
-  bottom: -20px;
+  bottom: -25px; /* Extend further down */
   left: 0;
   right: 0;
-  height: 20px;
+  height: 25px; /* Taller bridge */
+  width: 100%; /* Full width */
 }
 
 .bridge-top {
-  top: -20px;
+  top: -25px; /* Extend further up */
   left: 0;
   right: 0;
-  height: 20px;
+  height: 25px; /* Taller bridge */
+  width: 100%; /* Full width */
+}
+
+/* Create an invisible connection between marker and popup */
+.mapboxgl-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  pointer-events: auto !important;
 }
 
 /* Wrapper for marker and popup to manage hover state */
@@ -87,4 +115,11 @@
 .marker.hover-active {
   transform: scale(1.1);
   z-index: 5;
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.3));
+}
+
+/* Add shared hover state styles */
+.shared-hover-active .marker,
+.shared-hover-active .mapboxgl-popup {
+  pointer-events: auto !important;
 }

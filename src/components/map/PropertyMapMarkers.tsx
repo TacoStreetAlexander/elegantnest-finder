@@ -75,36 +75,60 @@ const PropertyMapMarkers = memo(({
       }
       
       /* Add a larger hover bridge to prevent flickering */
+      /* Create a larger invisible bridge between marker and popup */
       .marker-popup-bridge {
         content: '';
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        width: 30px;
-        height: 30px;
+        width: 40px; /* Wider bridge */
+        height: 40px; /* Taller bridge */
         background: transparent;
         pointer-events: auto !important;
         z-index: 15;
       }
       
-      /* Bridge below popup */
+      /* Bridge below popup - extend further down */
       .bridge-bottom {
-        bottom: -15px;
+        bottom: -20px;
       }
       
-      /* Bridge above popup */
+      /* Bridge above popup - extend further up */
       .bridge-top {
-        top: -15px;
+        top: -20px;
       }
       
-      /* Keep popup contents interactive */
+      /* Add a hover area around the marker for easier interaction */
+      .marker {
+        position: relative;
+      }
+      
+      .marker::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: transparent;
+        border-radius: 50%;
+        z-index: -1;
+      }
+      
+      /* Ensure popup and its contents are interactive */
       .property-popup {
         pointer-events: auto !important;
+        z-index: 20 !important;
       }
       
       .property-popup-content, 
       .property-popup-content * {
         pointer-events: auto !important;
+      }
+      
+      /* Add a slight transition for smoother hover effects */
+      .marker, .mapboxgl-popup {
+        transition: transform 0.2s ease, filter 0.2s ease;
       }
       
       /* Enhance popup link interaction */

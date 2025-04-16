@@ -129,13 +129,57 @@ export const addPropertyMarkers = (
       markers[property.id] = marker;
       popups[property.id] = popup;
       
-      // Handle popup interaction states
+      // Shared hover state for both marker and popup
       let popupCloseTimeout: number | null = null;
-      let isMouseOverPopup = false;
-      let isMouseOverMarker = false;
+      let isHovered = false; // Single shared hover state
       
       // Get popup element for hover detection
       const popupElement = popup.getElement();
+      
+      // Function to update hover state and handle popup visibility
+      const updateHoverState = (isEntering: boolean) => {
+        console.log(`Hover state update for Property ${property.id}: ${isEntering ? 'entering' : 'leaving'}`);
+        
+        // Update the shared hover state
+        isHovered = isEntering;
+        
+        if (isEntering) {
+          // Clear any existing close timeout when entering either element
+          if (popupCloseTimeout) {
+            console.log(`Clearing close timeout for Property ${property.id}`);
+            window.clearTimeout(popupCloseTimeout);
+            popupCloseTimeout = null;
+          }
+          
+          if (!isSelected) {
+            // Apply hover styling
+            el.classList.add('hover-active');
+            el.style.filter = 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.3))';
+            el.style.zIndex = '10';
+            
+            // Show popup immediately on hover
+            popup.addTo(map);
+          }
+        } else {
+          // Only schedule popup removal if not selected
+          if (!isSelected) {
+            console.log(`Scheduling popup removal for Property ${property.id}`);
+            
+            // Set timeout to close popup after delay
+            popupCloseTimeout = window.setTimeout(() => {
+              // Double-check hover state before removing
+              if (!isHovered && !isSelected) {
+                console.log(`Removing popup after delay: Property ${property.id}`);
+                popup.remove();
+                el.classList.remove('hover-active');
+                el.style.filter = '';
+                el.style.zIndex = '';
+              }
+              popupCloseTimeout = null;
+            }, 300); // 300ms delay before closing popup
+          }
+        }
+      };
       
       // Add click event to marker
       el.addEventListener('click', (e) => {
@@ -143,45 +187,15 @@ export const addPropertyMarkers = (
         onPropertySelect(property.id);
       });
       
-      // Add hover effects for marker with better timing
+      // Add hover effects for marker
       el.addEventListener('mouseenter', () => {
         console.log(`Marker mouseenter: Property ${property.id}`);
-        isMouseOverMarker = true;
-        
-        // Clear any existing close timeout when entering marker
-        if (popupCloseTimeout) {
-          window.clearTimeout(popupCloseTimeout);
-          popupCloseTimeout = null;
-        }
-        
-        if (!isSelected) {
-          el.classList.add('hover-active');
-          el.style.filter = 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.3))';
-          el.style.zIndex = '10';
-          
-          // Show popup immediately on hover
-          popup.addTo(map);
-        }
+        updateHoverState(true);
       });
       
-      // Add mouseleave for marker with delayed popup removal
       el.addEventListener('mouseleave', () => {
         console.log(`Marker mouseleave: Property ${property.id}`);
-        isMouseOverMarker = false;
-        
-        // Only schedule popup removal if not selected and popup not hovered
-        if (!isMouseOverPopup && !isSelected) {
-          popupCloseTimeout = window.setTimeout(() => {
-            if (!isMouseOverPopup && !isMouseOverMarker) {
-              console.log(`Removing popup after delay: Property ${property.id}`);
-              popup.remove();
-              el.classList.remove('hover-active');
-              el.style.filter = '';
-              el.style.zIndex = '';
-            }
-            popupCloseTimeout = null;
-          }, 300); // 300ms delay before closing popup
-        }
+        updateHoverState(false);
       });
       
       // Add mouseenter for popup
@@ -193,33 +207,12 @@ export const addPropertyMarkers = (
         
         popupElement.addEventListener('mouseenter', () => {
           console.log(`Popup mouseenter: Property ${property.id}`);
-          isMouseOverPopup = true;
-          
-          // Clear any existing close timeout
-          if (popupCloseTimeout) {
-            window.clearTimeout(popupCloseTimeout);
-            popupCloseTimeout = null;
-          }
+          updateHoverState(true);
         });
         
-        // Add mouseleave for popup with delayed removal
         popupElement.addEventListener('mouseleave', () => {
           console.log(`Popup mouseleave: Property ${property.id}`);
-          isMouseOverPopup = false;
-          
-          // Only schedule popup removal if marker not hovered and not selected
-          if (!isMouseOverMarker && !isSelected) {
-            popupCloseTimeout = window.setTimeout(() => {
-              if (!isMouseOverMarker && !isMouseOverPopup) {
-                console.log(`Removing popup after delay: Property ${property.id}`);
-                popup.remove();
-                el.classList.remove('hover-active');
-                el.style.filter = '';
-                el.style.zIndex = '';
-              }
-              popupCloseTimeout = null;
-            }, 300); // 300ms delay before closing popup
-          }
+          updateHoverState(false);
         });
         
         // Make sure links inside popup work properly
@@ -236,6 +229,28 @@ export const addPropertyMarkers = (
       if ('ontouchstart' in window) {
         let isPopupVisible = false;
         
+        // Document click handler to close popup when clicking outside
+        const handleDocumentTouch = (e: Event) => {
+          const target = e.target as HTMLElement;
+          if (!target) return;
+          
+          // Skip if touching the marker or popup
+          if (target.closest('.marker') === el || 
+              (popupElement && target.closest('.mapboxgl-popup') === popupElement)) {
+            return;
+          }
+          
+          // Close popup if it's open
+          if (isPopupVisible && !isSelected) {
+            popup.remove();
+            isPopupVisible = false;
+          }
+        };
+        
+        // Add document touch listener
+        document.addEventListener('touchstart', handleDocumentTouch);
+        
+        // Toggle popup on marker touch
         el.addEventListener('touchstart', (e) => {
           e.stopPropagation();
           
@@ -243,12 +258,14 @@ export const addPropertyMarkers = (
             popup.remove();
             isPopupVisible = false;
           } else {
+            // Close all other popups first
+            Object.values(popups).forEach(p => p.remove());
             popup.addTo(map);
             isPopupVisible = true;
           }
         });
         
-        // Add touch event for popup to prevent it from closing
+        // Prevent popup from closing when touching it
         if (popupElement) {
           popupElement.addEventListener('touchstart', (e) => {
             e.stopPropagation();
