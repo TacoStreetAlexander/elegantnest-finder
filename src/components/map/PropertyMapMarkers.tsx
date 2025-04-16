@@ -54,7 +54,7 @@ const PropertyMapMarkers = memo(({
     }, 100);
   };
   
-  // Add style element to ensure markers stay fixed
+  // Add enhanced style element to ensure markers and popups interact properly
   useEffect(() => {
     const styleEl = document.createElement('style');
     styleEl.id = 'marker-position-fix';
@@ -65,23 +65,54 @@ const PropertyMapMarkers = memo(({
       
       .mapboxgl-popup {
         pointer-events: auto !important;
+        z-index: 20 !important;
       }
       
       .mapboxgl-popup-content {
         pointer-events: auto !important;
+        padding: 0 !important;
+        overflow: visible !important;
       }
       
-      /* Add a small hover bridge to prevent flickering */
-      .mapboxgl-popup::after {
+      /* Add a larger hover bridge to prevent flickering */
+      .marker-popup-bridge {
         content: '';
         position: absolute;
-        bottom: -10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 20px;
-        height: 10px;
+        width: 30px;
+        height: 30px;
         background: transparent;
-        pointer-events: auto;
+        pointer-events: auto !important;
+        z-index: 15;
+      }
+      
+      /* Bridge below popup */
+      .bridge-bottom {
+        bottom: -15px;
+      }
+      
+      /* Bridge above popup */
+      .bridge-top {
+        top: -15px;
+      }
+      
+      /* Keep popup contents interactive */
+      .property-popup {
+        pointer-events: auto !important;
+      }
+      
+      .property-popup-content, 
+      .property-popup-content * {
+        pointer-events: auto !important;
+      }
+      
+      /* Enhance popup link interaction */
+      .popup-link {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        display: block;
+        text-align: center;
       }
     `;
     document.head.appendChild(styleEl);

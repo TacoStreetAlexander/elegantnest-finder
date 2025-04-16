@@ -181,12 +181,14 @@ export const createPropertyPopup = (property: Property): mapboxgl.Popup => {
   })
     .setHTML(`
       <div class="p-3 property-popup-content" data-property-id="${property.id}">
+        <div class="marker-popup-bridge bridge-top"></div>
         <h3 class="font-bold text-sm mb-1">${propertyName}</h3>
         <p class="text-xs text-gray-600 mb-2">${locationText}</p>
         ${floorPlanHTML}
         <a href="/properties/${property.id}" class="block text-xs bg-primary text-primary-foreground py-1 px-2 rounded text-center mt-2 popup-link">
           View Details
         </a>
+        <div class="marker-popup-bridge bridge-bottom"></div>
       </div>
     `);
     

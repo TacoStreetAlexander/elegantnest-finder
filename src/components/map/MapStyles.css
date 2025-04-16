@@ -14,7 +14,7 @@
   z-index: 10;
 }
 
-/* Fix for popup appearance */
+/* Improved popup appearance */
 .mapboxgl-popup {
   z-index: 20 !important;
   pointer-events: auto !important; /* Critical - ensure popups catch mouse events */
@@ -28,17 +28,35 @@
   pointer-events: auto !important; /* Ensure popup content catches mouse events */
 }
 
-/* Additional invisible area to improve hover experience */
-.marker-popup-gap {
+/* Enhanced bridge elements to improve hover experience */
+.marker-popup-bridge {
   position: absolute;
-  bottom: -15px;
+  background: transparent;
+  pointer-events: auto !important;
+  z-index: 15;
+}
+
+.bridge-bottom {
+  bottom: -20px;
   left: 0;
   right: 0;
-  height: 15px;
-  background: transparent;
+  height: 20px;
+}
+
+.bridge-top {
+  top: -20px;
+  left: 0;
+  right: 0;
+  height: 20px;
+}
+
+/* Wrapper for marker and popup to manage hover state */
+.marker-popup-wrapper {
+  position: relative;
   pointer-events: auto !important;
 }
 
+/* Ensure all popup elements are interactive */
 .property-popup {
   pointer-events: auto !important;
 }
@@ -47,10 +65,15 @@
   pointer-events: auto !important;
 }
 
+.property-popup-content * {
+  pointer-events: auto !important;
+}
+
 .popup-link {
   pointer-events: auto !important;
   display: block;
   text-align: center;
+  cursor: pointer !important;
 }
 
 /* Selected marker styles */
