@@ -2,6 +2,7 @@
 import { MapPin, Star, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Property } from '../types/property';
+import SaveButton from './SaveButton';
 
 interface PropertyListingProps {
   property: Property;
@@ -154,12 +155,7 @@ const PropertyListing = ({ property }: PropertyListingProps) => {
           >
             View Details
           </Link>
-          <Link 
-            to={`/schedule-tour/${property.id}`} 
-            className="flex-1 border border-input bg-white text-center py-2 rounded-md text-sm font-medium hover:bg-secondary transition-colors"
-          >
-            Schedule Tour
-          </Link>
+          <SaveButton propertyId={property.id} className="text-sm" />
         </div>
       </div>
     </div>

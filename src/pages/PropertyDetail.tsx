@@ -8,7 +8,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Property } from '@/types/property';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Bed, Bath, Home, MapPin, DollarSign, Bookmark, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Home, MapPin, DollarSign, ExternalLink } from 'lucide-react';
+import SaveButton from '@/components/SaveButton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -116,9 +117,7 @@ const PropertyDetail = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline">
-                <Bookmark className="mr-2 h-4 w-4" /> Save
-              </Button>
+              <SaveButton propertyId={property.id} className="text-sm" />
               {property.website && (
                 <Button variant="default" asChild>
                   <a href={property.website} target="_blank" rel="noopener noreferrer">

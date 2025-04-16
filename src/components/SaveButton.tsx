@@ -26,16 +26,18 @@ const SaveButton = ({ propertyId, className = '' }: SaveButtonProps) => {
       const result = await toggleSaveProperty(propertyId);
       
       if (!result.success) {
-        // Show alert if user is not logged in
-        if (!isLoggedIn) {
-          alert("Please log in to save listings.");
-        } else {
-          toast({
-            title: "Error",
-            description: result.message,
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: !isLoggedIn ? "Authentication Required" : "Error",
+          description: result.message,
+          variant: "destructive",
+        });
+      } else {
+        // Show success toast
+        toast({
+          title: isSaved ? "Property Unsaved" : "Property Saved",
+          description: result.message,
+          variant: "default",
+        });
       }
     } catch (error) {
       console.error('Error saving property:', error);
