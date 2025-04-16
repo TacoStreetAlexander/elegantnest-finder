@@ -1,3 +1,4 @@
+
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
 
@@ -12,6 +13,7 @@ export const createMarkerElement = (property: Property, isSelected: boolean = fa
   el.setAttribute('role', 'button');
   el.setAttribute('aria-label', `Property: ${property.name}`);
   el.setAttribute('tabindex', '0');
+  el.dataset.propertyId = property.id.toString();
   
   // Choose marker icon based on property type
   if (property.featured) {
@@ -56,6 +58,9 @@ export const createMarkerElement = (property: Property, isSelected: boolean = fa
   // Custom styles for better visibility
   el.style.cursor = 'pointer';
   el.style.borderRadius = '50%';
+  el.style.transition = 'transform 0.2s ease, filter 0.2s ease';
+  el.style.transformOrigin = 'center bottom';
+  el.style.zIndex = '1';
   
   // Animation for hover and selection
   if (isSelected) {
@@ -165,19 +170,24 @@ export const createPropertyPopup = (property: Property): mapboxgl.Popup => {
     ? `${propertyCity}, ${propertyState}` 
     : propertyCity || propertyState || 'Location unavailable';
   
-  return new mapboxgl.Popup({ 
+  // Create popup with improved hover handling
+  const popup = new mapboxgl.Popup({ 
     offset: 25,
     closeButton: false,
-    className: 'property-popup'
+    className: 'property-popup',
+    closeOnClick: false, // Prevent popup from closing when clicked
+    focusAfterOpen: false // Prevent focus stealing
   })
     .setHTML(`
-      <div class="p-3">
+      <div class="p-3 property-popup-content" data-property-id="${property.id}">
         <h3 class="font-bold text-sm mb-1">${propertyName}</h3>
         <p class="text-xs text-gray-600 mb-2">${locationText}</p>
         ${floorPlanHTML}
-        <a href="/properties/${property.id}" class="block text-xs bg-primary text-primary-foreground py-1 px-2 rounded text-center mt-2">
+        <a href="/properties/${property.id}" class="block text-xs bg-primary text-primary-foreground py-1 px-2 rounded text-center mt-2 popup-link">
           View Details
         </a>
       </div>
     `);
+    
+  return popup;
 };

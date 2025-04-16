@@ -1,3 +1,4 @@
+
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
 import { createMarkerElement, createPropertyPopup } from './markerCreation';
@@ -134,8 +135,9 @@ export const addPropertyMarkers = (
         onPropertySelect(property.id);
       });
       
-      // Add hover effects
+      // Add hover effects with logging
       el.addEventListener('mouseenter', () => {
+        console.log(`Marker mouseenter: Property ${property.id} (selected: ${isSelected})`);
         if (!isSelected) {
           el.style.transform = 'scale(1.1)';
           popup.addTo(map);
@@ -149,36 +151,46 @@ export const addPropertyMarkers = (
       let isMouseOverPopup = false;
       let isMouseOverMarker = false;
       
-      // Add event listeners to popup
+      // Add event listeners to popup with logging
       if (popupElement) {
         popupElement.addEventListener('mouseenter', () => {
+          console.log(`Popup mouseenter: Property ${property.id}`);
           isMouseOverPopup = true;
         });
         
         popupElement.addEventListener('mouseleave', () => {
+          console.log(`Popup mouseleave: Property ${property.id}`);
           isMouseOverPopup = false;
           // Only remove popup if mouse is not over marker
-          if (!isMouseOverMarker && !isSelected) {
-            popup.remove();
-            el.style.transform = 'scale(1)';
-          }
+          setTimeout(() => {
+            if (!isMouseOverMarker && !isSelected) {
+              console.log(`Removing popup after leave: Property ${property.id} (marker hover: ${isMouseOverMarker})`);
+              popup.remove();
+              el.style.transform = 'scale(1)';
+            }
+          }, 100); // Add small delay to prevent flickering
         });
       }
       
-      // Update marker mouseleave to check popup state
+      // Update marker mouseleave to check popup state with logging
       el.addEventListener('mouseenter', () => {
+        console.log(`Marker mouseenter (flag update): Property ${property.id}`);
         isMouseOverMarker = true;
       });
       
       el.addEventListener('mouseleave', () => {
+        console.log(`Marker mouseleave: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
         isMouseOverMarker = false;
         // Use timeout to allow mouse to enter popup
         setTimeout(() => {
           if (!isMouseOverPopup && !isSelected) {
+            console.log(`Marker leave timeout check: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
             el.style.transform = 'scale(1)';
             popup.remove();
+          } else {
+            console.log(`Keeping popup visible: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
           }
-        }, 50);
+        }, 100); // Increased timeout to give more time to move to popup
       });
     } catch (error) {
       console.error(`Error creating marker for property ${property?.id || 'unknown'}:`, error);

@@ -1,0 +1,47 @@
+
+/* Map component styles */
+
+/* Fix for marker hover states */
+.marker {
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  transform-origin: center bottom;
+  z-index: 1;
+}
+
+.marker:hover {
+  z-index: 10;
+}
+
+/* Fix for popup appearance */
+.mapboxgl-popup {
+  z-index: 20 !important;
+}
+
+.mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.property-popup {
+  pointer-events: auto !important;
+}
+
+.property-popup-content {
+  pointer-events: auto !important;
+}
+
+.popup-link {
+  pointer-events: auto !important;
+  display: block;
+  text-align: center;
+}
+
+/* Selected marker styles */
+.marker-selected {
+  z-index: 10;
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.7));
+  transform: scale(1.2);
+}

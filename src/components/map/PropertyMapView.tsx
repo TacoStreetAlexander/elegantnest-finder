@@ -7,6 +7,7 @@ import MapLoadingIndicator from './MapLoadingIndicator';
 import MapErrorState from './MapErrorState';
 import MapLegend from './MapLegend';
 import PropertyMapMarkers from './PropertyMapMarkers';
+import './MapStyles.css'; // Import the map styles
 
 interface PropertyMapViewProps {
   properties: Property[];
@@ -28,6 +29,11 @@ const PropertyMapView = memo(({
   const [isMapLoading, setIsMapLoading] = useState(true);
   const mapRenderAttemptsRef = useRef(0); // Use ref instead of state to avoid re-renders
   
+  // Add debug logging for hover issues
+  useEffect(() => {
+    console.log('PropertyMapView rendering with properties:', properties.length, 'selected:', selectedPropertyId);
+  }, [properties.length, selectedPropertyId]);
+  
   // Use our map initialization hook
   const { map, mapLoaded, mapError, isInitializing, updateMapboxToken } = useMapInitialization(
     isComponentMounted ? mapContainer : null,
@@ -42,6 +48,7 @@ const PropertyMapView = memo(({
   
   // Memoize property selection handler to avoid rerenders
   const handlePropertySelect = useCallback((id: number) => {
+    console.log('Property selected from map:', id);
     onPropertySelect(id);
   }, [onPropertySelect]);
   

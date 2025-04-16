@@ -35,6 +35,39 @@ export const useMapMarkers = ({
   const mapLoadListenerRef = useRef<((e: mapboxgl.MapboxEvent) => void) | null>(null);
   const propertiesRef = useRef<Property[]>([]);
   
+  // Add a debug event listener to monitor popup interactions
+  useEffect(() => {
+    const handleDebugEvents = (e: MouseEvent) => {
+      // Check if the event target is a marker or popup
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      
+      // Log popup interactions
+      if (target.closest('.property-popup')) {
+        console.log(`Popup interaction: ${e.type} on popup`);
+      }
+      
+      // Log marker interactions
+      if (target.closest('.marker')) {
+        const markerId = target.closest('.marker')?.getAttribute('data-property-id');
+        console.log(`Marker interaction: ${e.type} on marker ${markerId}`);
+      }
+    };
+    
+    // Add listeners to document to catch all interactions
+    document.addEventListener('mouseenter', handleDebugEvents, true);
+    document.addEventListener('mouseleave', handleDebugEvents, true);
+    document.addEventListener('mouseover', handleDebugEvents, true);
+    document.addEventListener('mouseout', handleDebugEvents, true);
+    
+    return () => {
+      document.removeEventListener('mouseenter', handleDebugEvents, true);
+      document.removeEventListener('mouseleave', handleDebugEvents, true);
+      document.removeEventListener('mouseover', handleDebugEvents, true);
+      document.removeEventListener('mouseout', handleDebugEvents, true);
+    };
+  }, []);
+  
   // Memoize marker cleanup to avoid creating new functions
   const cleanupMarkers = useCallback(() => {
     console.log('Cleaning up markers');
@@ -104,6 +137,18 @@ export const useMapMarkers = ({
       // Fit map to bounds
       fitMapToBounds(map, bounds, isMobile);
       
+      // Add Map movement listener to fix popups
+      map.on('move', () => {
+        // Ensure popups stay with their markers during map movement
+        if (selectedPropertyId && popupsRef.current[selectedPropertyId]) {
+          const popup = popupsRef.current[selectedPropertyId];
+          if (popup.isOpen()) {
+            // Force popup to update position
+            popup.addTo(map);
+          }
+        }
+      });
+      
       return true;
     } catch (error) {
       console.error('Error adding markers:', error);
@@ -138,6 +183,31 @@ export const useMapMarkers = ({
       if (addMarkersToMap()) {
         setHasAddedMarkers(true);
         console.log('Markers successfully added');
+        
+        // Add global styles for popups to fix z-index issues
+        if (!document.getElementById('popup-styles')) {
+          const styleEl = document.createElement('style');
+          styleEl.id = 'popup-styles';
+          styleEl.textContent = `
+            .mapboxgl-popup {
+              z-index: 20 !important;
+            }
+            .mapboxgl-popup-content {
+              padding: 0 !important;
+              overflow: visible !important;
+            }
+            .property-popup {
+              pointer-events: auto !important;
+            }
+            .property-popup-content {
+              pointer-events: auto !important;
+            }
+            .popup-link {
+              pointer-events: auto !important;
+            }
+          `;
+          document.head.appendChild(styleEl);
+        }
       }
     };
     
