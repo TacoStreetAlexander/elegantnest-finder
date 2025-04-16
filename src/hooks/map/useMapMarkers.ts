@@ -38,7 +38,7 @@ export const useMapMarkers = ({
   
   // State to manage hover timeouts
   const hoverTimeoutsRef = useRef<{ [key: number]: number }>({});
-  const hoverStatesRef = useRef<{ [key: number]: boolean }>({});
+  const hoverStatesRef = useRef<{ [key: number]: { marker: boolean, popup: boolean } }>({});
   
   // Add a debug event listener to monitor popup interactions
   useEffect(() => {
@@ -121,7 +121,7 @@ export const useMapMarkers = ({
     }
   }, [properties]);
   
-  // Improved hover state management for markers and popups with shared state
+  // Improved hover state management for markers and popups
   const setupMarkerInteractions = useCallback((
     propertyId: number,
     marker: mapboxgl.Marker,
@@ -134,21 +134,27 @@ export const useMapMarkers = ({
     const popupElement = popup.getElement();
     
     // Initialize hover state for this property
-    if (hoverStatesRef.current[propertyId] === undefined) {
-      hoverStatesRef.current[propertyId] = false;
+    if (!hoverStatesRef.current[propertyId]) {
+      hoverStatesRef.current[propertyId] = { marker: false, popup: false };
     }
     
+    // Helper to check if currently hovered
+    const isCurrentlyHovered = () => {
+      const state = hoverStatesRef.current[propertyId];
+      return state && (state.marker || state.popup);
+    };
+    
     // Helper to update hover state
-    const updateHoverState = (isHovered: boolean) => {
-      console.log(`Hover state update for Property ${propertyId}: ${isHovered ? 'entering' : 'leaving'}`);
+    const updateHoverState = (source: 'marker' | 'popup', isHovered: boolean) => {
+      if (!hoverStatesRef.current[propertyId]) {
+        hoverStatesRef.current[propertyId] = { marker: false, popup: false };
+      }
       
-      // Update the shared hover state
-      hoverStatesRef.current[propertyId] = isHovered;
+      hoverStatesRef.current[propertyId][source] = isHovered;
       
+      // If marker or popup is hovered, clear any existing timeout
       if (isHovered) {
-        // Clear any existing close timeout when entering
         if (hoverTimeoutsRef.current[propertyId]) {
-          console.log(`Clearing close timeout for Property ${propertyId}`);
           window.clearTimeout(hoverTimeoutsRef.current[propertyId]);
           hoverTimeoutsRef.current[propertyId] = 0;
         }
@@ -165,14 +171,12 @@ export const useMapMarkers = ({
           el.style.zIndex = '10';
         }
       } else {
-        // Only schedule popup removal if not selected
-        if (!isSelected) {
-          console.log(`Scheduling popup removal for Property ${propertyId}`);
-          
-          // Set timeout to close popup after delay
+        // Check if both marker and popup are no longer hovered
+        if (!isCurrentlyHovered() && !isSelected) {
+          // Start a timeout to remove the popup
           hoverTimeoutsRef.current[propertyId] = window.setTimeout(() => {
             // Double-check hover state before removing
-            if (!hoverStatesRef.current[propertyId] && !isSelected) {
+            if (!isCurrentlyHovered() && !isSelected) {
               console.log(`Removing popup after delay: Property ${propertyId}`);
               popup.remove();
               el.classList.remove('hover-active');
@@ -190,12 +194,12 @@ export const useMapMarkers = ({
     // Marker mouse events
     el.addEventListener('mouseenter', () => {
       console.log(`Marker mouseenter: Property ${propertyId}`);
-      updateHoverState(true);
+      updateHoverState('marker', true);
     });
     
     el.addEventListener('mouseleave', () => {
       console.log(`Marker mouseleave: Property ${propertyId}`);
-      updateHoverState(false);
+      updateHoverState('marker', false);
     });
     
     // Click events for touch devices and regular clicks
@@ -222,12 +226,12 @@ export const useMapMarkers = ({
     if (popupElement) {
       popupElement.addEventListener('mouseenter', () => {
         console.log(`Popup mouseenter: Property ${propertyId}`);
-        updateHoverState(true);
+        updateHoverState('popup', true);
       });
       
       popupElement.addEventListener('mouseleave', () => {
         console.log(`Popup mouseleave: Property ${propertyId}`);
-        updateHoverState(false);
+        updateHoverState('popup', false);
       });
       
       // Ensure links in popup work by stopping event propagation
@@ -254,9 +258,9 @@ export const useMapMarkers = ({
         
         // Skip if touching a marker or popup
         if (target && (
-          target.closest('.marker') === el || 
-          target.closest('.mapboxgl-popup') === popupElement ||
-          target.closest('.property-popup') === popupElement ||
+          target.closest('.marker') || 
+          target.closest('.mapboxgl-popup') ||
+          target.closest('.property-popup') ||
           target.closest('.property-popup-content')
         )) {
           return;
