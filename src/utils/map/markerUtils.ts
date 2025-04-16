@@ -142,11 +142,43 @@ export const addPropertyMarkers = (
         }
       });
       
+      // Get popup element for hover detection
+      const popupElement = popup.getElement();
+      
+      // Track if mouse is over popup or marker
+      let isMouseOverPopup = false;
+      let isMouseOverMarker = false;
+      
+      // Add event listeners to popup
+      if (popupElement) {
+        popupElement.addEventListener('mouseenter', () => {
+          isMouseOverPopup = true;
+        });
+        
+        popupElement.addEventListener('mouseleave', () => {
+          isMouseOverPopup = false;
+          // Only remove popup if mouse is not over marker
+          if (!isMouseOverMarker && !isSelected) {
+            popup.remove();
+            el.style.transform = 'scale(1)';
+          }
+        });
+      }
+      
+      // Update marker mouseleave to check popup state
+      el.addEventListener('mouseenter', () => {
+        isMouseOverMarker = true;
+      });
+      
       el.addEventListener('mouseleave', () => {
-        if (!isSelected) {
-          el.style.transform = 'scale(1)';
-          popup.remove();
-        }
+        isMouseOverMarker = false;
+        // Use timeout to allow mouse to enter popup
+        setTimeout(() => {
+          if (!isMouseOverPopup && !isSelected) {
+            el.style.transform = 'scale(1)';
+            popup.remove();
+          }
+        }, 50);
       });
     } catch (error) {
       console.error(`Error creating marker for property ${property?.id || 'unknown'}:`, error);
