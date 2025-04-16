@@ -9,6 +9,37 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      saved_properties: {
+        Row: {
+          user_id: string;
+          property_id: number;
+          created_at?: string;
+        };
+        Insert: {
+          user_id: string;
+          property_id: number;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          property_id?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_properties_property_id_fkey";
+            columns: ["property_id"];
+            referencedRelation: "Senior Draft 3";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "saved_properties_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       "Senior Draft 3": {
         Row: {
           "1brstart": string | null

@@ -3,6 +3,7 @@ import { MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Property } from '../types/property';
 import { Button } from './ui/button';
+import SaveButton from './SaveButton';
 import {
   Tooltip,
   TooltipContent,
@@ -153,19 +154,25 @@ const MapPropertyCard = ({ property, isSelected, onSelect }: MapPropertyCardProp
           )}
         </div>
         
-        <Link 
-          to={propertyLink} 
-          className="text-xs"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Button 
-            size="sm" 
-            variant="secondary"
-            className="text-xs px-2 py-1 h-auto font-normal"
+        <div className="flex items-center gap-1">
+          <SaveButton 
+            propertyId={property.id} 
+            className="text-xs"
+          />
+          <Link 
+            to={propertyLink} 
+            className="text-xs"
+            onClick={(e) => e.stopPropagation()}
           >
-            View Details
-          </Button>
-        </Link>
+            <Button 
+              size="sm" 
+              variant="secondary"
+              className="text-xs px-2 py-1 h-auto font-normal"
+            >
+              View Details
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

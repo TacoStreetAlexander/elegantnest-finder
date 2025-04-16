@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Property } from '@/types/property';
 import { Card, CardContent } from '@/components/ui/card';
 import { Home } from 'lucide-react';
+import SaveButton from '@/components/SaveButton';
 
 interface PropertyCardProps {
   property: Property;
@@ -119,6 +120,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
               <Home className="h-3 w-3" />
               <span>{property.propertyType}</span>
             </div>
+            <SaveButton propertyId={property.id} className="text-xs" />
           </div>
         </CardContent>
       </Card>
