@@ -42,13 +42,52 @@ const PropertyMapMarkers = memo(({
     console.log('Marker status updated:', { hasAddedMarkers });
   }, [hasAddedMarkers]);
   
+  // When dialog closes, ensure markers stay in proper position
+  const handleDialogClose = () => {
+    setSelectedProperty(null);
+    
+    // Resize map to ensure markers stay in proper position
+    setTimeout(() => {
+      if (map) {
+        map.resize();
+      }
+    }, 100);
+  };
+  
+  // Add style element to ensure markers stay fixed
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'marker-position-fix';
+    styleEl.textContent = `
+      .marker {
+        position: absolute !important;
+      }
+      
+      .mapboxgl-popup {
+        pointer-events: auto !important;
+      }
+      
+      .mapboxgl-popup-content {
+        pointer-events: auto !important;
+      }
+    `;
+    document.head.appendChild(styleEl);
+    
+    return () => {
+      const existingStyle = document.getElementById('marker-position-fix');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    };
+  }, []);
+  
   return (
     <>
       {selectedProperty && (
         <PropertyDetailDialog
           property={selectedProperty}
           isOpen={true}
-          onClose={() => setSelectedProperty(null)}
+          onClose={handleDialogClose}
         />
       )}
     </>

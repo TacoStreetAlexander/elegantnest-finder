@@ -17,6 +17,7 @@
 /* Fix for popup appearance */
 .mapboxgl-popup {
   z-index: 20 !important;
+  pointer-events: auto !important; /* Critical - ensure popups catch mouse events */
 }
 
 .mapboxgl-popup-content {
@@ -24,6 +25,7 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  pointer-events: auto !important; /* Ensure popup content catches mouse events */
 }
 
 .property-popup {
@@ -45,4 +47,15 @@
   z-index: 10;
   filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.7));
   transform: scale(1.2);
+}
+
+/* Add gap between popup and marker to prevent flicker */
+.marker-popup-gap {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: transparent;
+  pointer-events: auto;
 }

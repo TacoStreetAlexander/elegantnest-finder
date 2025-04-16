@@ -128,7 +128,8 @@ export const addPropertyMarkers = (
       markers[property.id] = marker;
       popups[property.id] = popup;
       
-      // Track if mouse is over popup or marker
+      // Keep track of open popup and hover state
+      let popupCloseTimeout: number | null = null;
       let isMouseOverPopup = false;
       let isMouseOverMarker = false;
       
@@ -138,13 +139,23 @@ export const addPropertyMarkers = (
         onPropertySelect(property.id);
       });
       
-      // Add hover effects with logging
+      // Add hover effects with proper timers
       el.addEventListener('mouseenter', () => {
-        console.log(`Marker mouseenter: Property ${property.id} (selected: ${isSelected})`);
+        console.log(`Marker mouseenter: Property ${property.id}`);
+        isMouseOverMarker = true;
+        
+        // Clear any existing close timeout when entering the marker
+        if (popupCloseTimeout) {
+          window.clearTimeout(popupCloseTimeout);
+          popupCloseTimeout = null;
+        }
+        
         if (!isSelected) {
           el.classList.add('hover-active');
           el.style.filter = 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.3))';
           el.style.zIndex = '10';
+          
+          // Show popup immediately on hover
           popup.addTo(map);
         }
       });
@@ -152,51 +163,73 @@ export const addPropertyMarkers = (
       // Get popup element for hover detection
       const popupElement = popup.getElement();
       
-      // Add event listeners to popup with logging
+      // Add event listeners to popup
       if (popupElement) {
         popupElement.addEventListener('mouseenter', () => {
           console.log(`Popup mouseenter: Property ${property.id}`);
           isMouseOverPopup = true;
+          
+          // Clear any existing close timeout when entering the popup
+          if (popupCloseTimeout) {
+            window.clearTimeout(popupCloseTimeout);
+            popupCloseTimeout = null;
+          }
         });
         
         popupElement.addEventListener('mouseleave', () => {
           console.log(`Popup mouseleave: Property ${property.id}`);
           isMouseOverPopup = false;
-          // Only remove popup if mouse is not over marker
-          setTimeout(() => {
-            if (!isMouseOverMarker && !isSelected) {
-              console.log(`Removing popup after leave: Property ${property.id} (marker hover: ${isMouseOverMarker})`);
+          
+          // Only schedule popup removal after both marker and popup are not hovered
+          if (!isMouseOverMarker && !isSelected) {
+            popupCloseTimeout = window.setTimeout(() => {
+              console.log(`Removing popup after leave delay: Property ${property.id}`);
               popup.remove();
               el.classList.remove('hover-active');
               el.style.filter = '';
               el.style.zIndex = '';
-            }
-          }, 200); // Add small delay to prevent flickering
+              popupCloseTimeout = null;
+            }, 300); // Added delay before closing popup
+          }
         });
       }
       
-      // Update marker mouseleave to check popup state with logging
-      el.addEventListener('mouseenter', () => {
-        console.log(`Marker mouseenter (flag update): Property ${property.id}`);
-        isMouseOverMarker = true;
+      // Update marker mouseleave to use delay
+      el.addEventListener('mouseleave', () => {
+        console.log(`Marker mouseleave: Property ${property.id}`);
+        isMouseOverMarker = false;
+        
+        // Only schedule popup removal after both marker and popup are not hovered
+        if (!isMouseOverPopup && !isSelected) {
+          popupCloseTimeout = window.setTimeout(() => {
+            console.log(`Marker leave timeout check: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
+            if (!isMouseOverPopup) {
+              el.classList.remove('hover-active');
+              el.style.filter = '';
+              el.style.zIndex = '';
+              popup.remove();
+            }
+            popupCloseTimeout = null;
+          }, 300); // Added delay before closing popup
+        }
       });
       
-      el.addEventListener('mouseleave', () => {
-        console.log(`Marker mouseleave: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
-        isMouseOverMarker = false;
-        // Use timeout to allow mouse to enter popup
-        setTimeout(() => {
-          if (!isMouseOverPopup && !isSelected) {
-            console.log(`Marker leave timeout check: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
-            el.classList.remove('hover-active');
-            el.style.filter = '';
-            el.style.zIndex = '';
+      // For touch devices, handle popup toggle
+      if ('ontouchstart' in window) {
+        let isPopupVisible = false;
+        
+        el.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
+          
+          if (isPopupVisible) {
             popup.remove();
+            isPopupVisible = false;
           } else {
-            console.log(`Keeping popup visible: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
+            popup.addTo(map);
+            isPopupVisible = true;
           }
-        }, 200); // Increased timeout to give more time to move to popup
-      });
+        });
+      }
     } catch (error) {
       console.error(`Error creating marker for property ${property?.id || 'unknown'}:`, error);
     }
