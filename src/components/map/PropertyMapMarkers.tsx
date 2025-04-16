@@ -1,8 +1,9 @@
 
-import { useEffect, memo } from 'react';
+import { useEffect, memo, useState } from 'react';
 import { useMapMarkers } from '../../hooks/map';
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
+import PropertyDetailDialog from './PropertyDetailDialog';
 
 interface PropertyMapMarkersProps {
   map: mapboxgl.Map;
@@ -12,10 +13,6 @@ interface PropertyMapMarkersProps {
   isMobile: boolean;
 }
 
-/**
- * Component responsible for rendering property markers on the map
- * Memoized to prevent unnecessary re-renders
- */
 const PropertyMapMarkers = memo(({ 
   map, 
   properties, 
@@ -23,22 +20,20 @@ const PropertyMapMarkers = memo(({
   onPropertySelect,
   isMobile
 }: PropertyMapMarkersProps) => {
-  // Log component props for debugging
-  useEffect(() => {
-    console.log('PropertyMapMarkers rendering with:', {
-      mapAvailable: !!map,
-      propertiesCount: properties.length,
-      selectedProperty: selectedPropertyId,
-      isMobile
-    });
-  }, [map, properties.length, selectedPropertyId, isMobile]);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   
   // Use our custom hook to manage markers
   const { hasAddedMarkers } = useMapMarkers({
     map,
     properties,
     selectedPropertyId,
-    onPropertySelect,
+    onPropertySelect: (id: number) => {
+      const property = properties.find(p => p.id === id);
+      if (property) {
+        setSelectedProperty(property);
+      }
+      onPropertySelect(id);
+    },
     isMobile
   });
   
@@ -47,8 +42,17 @@ const PropertyMapMarkers = memo(({
     console.log('Marker status updated:', { hasAddedMarkers });
   }, [hasAddedMarkers]);
   
-  // This component doesn't render anything visible
-  return null;
+  return (
+    <>
+      {selectedProperty && (
+        <PropertyDetailDialog
+          property={selectedProperty}
+          isOpen={true}
+          onClose={() => setSelectedProperty(null)}
+        />
+      )}
+    </>
+  );
 });
 
 // Add display name for better debugging

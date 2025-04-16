@@ -1,4 +1,3 @@
-
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
 import { createMarkerElement, createPropertyPopup } from './markerCreation';
@@ -129,9 +128,13 @@ export const addPropertyMarkers = (
       markers[property.id] = marker;
       popups[property.id] = popup;
       
+      // Track if mouse is over popup or marker
+      let isMouseOverPopup = false;
+      let isMouseOverMarker = false;
+      
       // Add click event to marker
-      el.addEventListener('click', () => {
-        // When marker is clicked, select property
+      el.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
         onPropertySelect(property.id);
       });
       
@@ -139,7 +142,6 @@ export const addPropertyMarkers = (
       el.addEventListener('mouseenter', () => {
         console.log(`Marker mouseenter: Property ${property.id} (selected: ${isSelected})`);
         if (!isSelected) {
-          // IMPORTANT: Only change the scale, not the full transform which would affect positioning
           el.classList.add('hover-active');
           el.style.filter = 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.3))';
           el.style.zIndex = '10';
@@ -149,10 +151,6 @@ export const addPropertyMarkers = (
       
       // Get popup element for hover detection
       const popupElement = popup.getElement();
-      
-      // Track if mouse is over popup or marker
-      let isMouseOverPopup = false;
-      let isMouseOverMarker = false;
       
       // Add event listeners to popup with logging
       if (popupElement) {
