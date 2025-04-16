@@ -28,29 +28,15 @@
   pointer-events: auto !important; /* Ensure popup content catches mouse events */
 }
 
-/* Create a better hover container for markers and popups */
-.marker-hover-container {
-  position: relative;
-  z-index: 5;
-}
-
-/* Additional bridge element to improve hover experience */
-.marker-popup-bridge {
+/* Additional invisible area to improve hover experience */
+.marker-popup-gap {
   position: absolute;
   bottom: -15px;
   left: 0;
   right: 0;
-  height: 20px;
+  height: 15px;
   background: transparent;
   pointer-events: auto !important;
-  z-index: 15;
-}
-
-/* Enhanced positioning for popup tip */
-.mapboxgl-popup-tip {
-  position: relative;
-  z-index: 10;
-  pointer-events: none !important;
 }
 
 .property-popup {
@@ -78,10 +64,4 @@
 .marker.hover-active {
   transform: scale(1.1);
   z-index: 5;
-}
-
-/* Visible popup class */
-.popup-visible {
-  display: block !important;
-  opacity: 1 !important;
 }

@@ -54,7 +54,7 @@ const PropertyMapMarkers = memo(({
     }, 100);
   };
   
-  // Add style element to ensure markers and popups stay fixed
+  // Add style element to ensure markers stay fixed
   useEffect(() => {
     const styleEl = document.createElement('style');
     styleEl.id = 'marker-position-fix';
@@ -65,34 +65,23 @@ const PropertyMapMarkers = memo(({
       
       .mapboxgl-popup {
         pointer-events: auto !important;
-        z-index: 20 !important;
       }
       
       .mapboxgl-popup-content {
         pointer-events: auto !important;
       }
       
-      /* Hover gap fixes - create a larger interaction area */
-      .marker-hover-container {
-        position: relative;
-      }
-      
-      /* Bridge element to connect marker and popup */
-      .marker-popup-bridge {
+      /* Add a small hover bridge to prevent flickering */
+      .mapboxgl-popup::after {
+        content: '';
         position: absolute;
         bottom: -10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 40px;
-        height: 20px;
+        width: 20px;
+        height: 10px;
         background: transparent;
-        pointer-events: auto !important;
-        z-index: 15;
-      }
-      
-      /* Make sure popups are positioned correctly */
-      .mapboxgl-popup-tip {
-        pointer-events: none !important;
+        pointer-events: auto;
       }
     `;
     document.head.appendChild(styleEl);
