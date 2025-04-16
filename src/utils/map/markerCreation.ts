@@ -177,7 +177,8 @@ export const createPropertyPopup = (property: Property): mapboxgl.Popup => {
     closeButton: false,
     className: 'property-popup',
     closeOnClick: false, // Prevent popup from closing when clicked
-    focusAfterOpen: false // Prevent focus stealing
+    focusAfterOpen: false, // Prevent focus stealing
+    anchor: 'bottom' // Anchor at bottom to create space for hover bridge
   })
     .setHTML(`
       <div class="p-3 property-popup-content" data-property-id="${property.id}">

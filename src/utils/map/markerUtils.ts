@@ -116,11 +116,16 @@ export const addPropertyMarkers = (
       const isSelected = selectedPropertyId === property.id;
       const el = createMarkerElement(property, isSelected);
       
+      // Create a wrapper container for hover detection
+      const container = document.createElement('div');
+      container.className = 'marker-hover-container';
+      container.appendChild(el);
+      
       // Create popup
       const popup = createPropertyPopup(property);
       
-      // Add marker to map
-      const marker = new mapboxgl.Marker(el)
+      // Add marker to map using the container
+      const marker = new mapboxgl.Marker(container)
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map);
@@ -129,10 +134,13 @@ export const addPropertyMarkers = (
       markers[property.id] = marker;
       popups[property.id] = popup;
       
-      // Handle popup interaction states
-      let popupCloseTimeout: number | null = null;
-      let isMouseOverPopup = false;
-      let isMouseOverMarker = false;
+      // Create state variables for hover management
+      let hoverState = {
+        isHovering: false,
+        isPopupOpen: false,
+        closeTimeout: null as number | null,
+        isSelected: isSelected
+      };
       
       // Get popup element for hover detection
       const popupElement = popup.getElement();
@@ -143,83 +151,95 @@ export const addPropertyMarkers = (
         onPropertySelect(property.id);
       });
       
-      // Add hover effects for marker with better timing
-      el.addEventListener('mouseenter', () => {
-        console.log(`Marker mouseenter: Property ${property.id}`);
-        isMouseOverMarker = true;
-        
-        // Clear any existing close timeout when entering marker
-        if (popupCloseTimeout) {
-          window.clearTimeout(popupCloseTimeout);
-          popupCloseTimeout = null;
+      // Create bridge element to prevent hover flickering
+      const createBridge = () => {
+        const bridge = document.createElement('div');
+        bridge.className = 'marker-popup-bridge';
+        return bridge;
+      };
+      
+      // Function to clear any existing close timeout
+      const clearCloseTimeout = () => {
+        if (hoverState.closeTimeout) {
+          window.clearTimeout(hoverState.closeTimeout);
+          hoverState.closeTimeout = null;
         }
-        
-        if (!isSelected) {
+      };
+      
+      // Function to handle opening popup with proper styling
+      const openPopup = () => {
+        if (!hoverState.isPopupOpen && !hoverState.isSelected) {
+          popup.addTo(map);
+          hoverState.isPopupOpen = true;
+          
+          // Add bridge element if it doesn't exist
+          if (!popupElement.querySelector('.marker-popup-bridge')) {
+            const bridge = createBridge();
+            popupElement.appendChild(bridge);
+            
+            // Add event listeners to bridge
+            bridge.addEventListener('mouseenter', () => {
+              clearCloseTimeout();
+            });
+            
+            bridge.addEventListener('mouseleave', () => {
+              scheduleClose();
+            });
+          }
+          
+          // Style the marker
           el.classList.add('hover-active');
           el.style.filter = 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.3))';
           el.style.zIndex = '10';
-          
-          // Show popup immediately on hover
-          popup.addTo(map);
         }
-      });
+      };
       
-      // Add mouseleave for marker with delayed popup removal
-      el.addEventListener('mouseleave', () => {
-        console.log(`Marker mouseleave: Property ${property.id}`);
-        isMouseOverMarker = false;
+      // Function to schedule popup closing with delay
+      const scheduleClose = () => {
+        clearCloseTimeout();
         
-        // Only schedule popup removal if not selected and popup not hovered
-        if (!isMouseOverPopup && !isSelected) {
-          popupCloseTimeout = window.setTimeout(() => {
-            if (!isMouseOverPopup && !isMouseOverMarker) {
-              console.log(`Removing popup after delay: Property ${property.id}`);
+        if (!hoverState.isSelected) {
+          hoverState.closeTimeout = window.setTimeout(() => {
+            if (!hoverState.isHovering && !hoverState.isSelected) {
               popup.remove();
+              hoverState.isPopupOpen = false;
               el.classList.remove('hover-active');
               el.style.filter = '';
               el.style.zIndex = '';
             }
-            popupCloseTimeout = null;
-          }, 300); // 300ms delay before closing popup
+            hoverState.closeTimeout = null;
+          }, 300); // 300ms delay
         }
+      };
+      
+      // Add mouseenter for marker
+      el.addEventListener('mouseenter', () => {
+        console.log(`Marker mouseenter: Property ${property.id}`);
+        hoverState.isHovering = true;
+        clearCloseTimeout();
+        openPopup();
+      });
+      
+      // Add mouseleave for marker
+      el.addEventListener('mouseleave', () => {
+        console.log(`Marker mouseleave: Property ${property.id}`);
+        hoverState.isHovering = false;
+        scheduleClose();
       });
       
       // Add mouseenter for popup
       if (popupElement) {
-        // Add "gap" element to make popup interaction more reliable
-        const gap = document.createElement('div');
-        gap.className = 'marker-popup-gap';
-        popupElement.appendChild(gap);
-        
         popupElement.addEventListener('mouseenter', () => {
           console.log(`Popup mouseenter: Property ${property.id}`);
-          isMouseOverPopup = true;
-          
-          // Clear any existing close timeout
-          if (popupCloseTimeout) {
-            window.clearTimeout(popupCloseTimeout);
-            popupCloseTimeout = null;
-          }
+          hoverState.isHovering = true;
+          clearCloseTimeout();
         });
         
-        // Add mouseleave for popup with delayed removal
+        // Add mouseleave for popup
         popupElement.addEventListener('mouseleave', () => {
           console.log(`Popup mouseleave: Property ${property.id}`);
-          isMouseOverPopup = false;
-          
-          // Only schedule popup removal if marker not hovered and not selected
-          if (!isMouseOverMarker && !isSelected) {
-            popupCloseTimeout = window.setTimeout(() => {
-              if (!isMouseOverMarker && !isMouseOverPopup) {
-                console.log(`Removing popup after delay: Property ${property.id}`);
-                popup.remove();
-                el.classList.remove('hover-active');
-                el.style.filter = '';
-                el.style.zIndex = '';
-              }
-              popupCloseTimeout = null;
-            }, 300); // 300ms delay before closing popup
-          }
+          hoverState.isHovering = false;
+          scheduleClose();
         });
         
         // Make sure links inside popup work properly
@@ -243,8 +263,20 @@ export const addPropertyMarkers = (
             popup.remove();
             isPopupVisible = false;
           } else {
+            // Close any other open popups first
+            Object.values(popups).forEach(p => p.remove());
+            
+            // Open this popup
             popup.addTo(map);
             isPopupVisible = true;
+          }
+        });
+        
+        // Close popup when tapping elsewhere on the map
+        map.on('click', () => {
+          if (isPopupVisible && !hoverState.isSelected) {
+            popup.remove();
+            isPopupVisible = false;
           }
         });
         
@@ -256,6 +288,21 @@ export const addPropertyMarkers = (
           });
         }
       }
+      
+      // Update hover state when selection changes
+      Object.defineProperty(marker, 'isSelected', {
+        set: (value) => {
+          hoverState.isSelected = value;
+          if (value) {
+            openPopup();
+          } else {
+            if (!hoverState.isHovering) {
+              scheduleClose();
+            }
+          }
+        },
+        get: () => hoverState.isSelected
+      });
     } catch (error) {
       console.error(`Error creating marker for property ${property?.id || 'unknown'}:`, error);
     }
