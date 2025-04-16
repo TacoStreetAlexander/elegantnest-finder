@@ -70,6 +70,19 @@ const PropertyMapMarkers = memo(({
       .mapboxgl-popup-content {
         pointer-events: auto !important;
       }
+      
+      /* Add a small hover bridge to prevent flickering */
+      .mapboxgl-popup::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 10px;
+        background: transparent;
+        pointer-events: auto;
+      }
     `;
     document.head.appendChild(styleEl);
     

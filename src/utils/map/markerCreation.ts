@@ -61,6 +61,7 @@ export const createMarkerElement = (property: Property, isSelected: boolean = fa
   el.style.transition = 'transform 0.2s ease, filter 0.2s ease';
   el.style.transformOrigin = 'center bottom';
   el.style.zIndex = '1';
+  el.style.position = 'absolute';
   
   // Animation for hover and selection
   if (isSelected) {

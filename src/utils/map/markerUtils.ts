@@ -1,3 +1,4 @@
+
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
 import { createMarkerElement, createPropertyPopup } from './markerCreation';
@@ -128,10 +129,13 @@ export const addPropertyMarkers = (
       markers[property.id] = marker;
       popups[property.id] = popup;
       
-      // Keep track of open popup and hover state
+      // Handle popup interaction states
       let popupCloseTimeout: number | null = null;
       let isMouseOverPopup = false;
       let isMouseOverMarker = false;
+      
+      // Get popup element for hover detection
+      const popupElement = popup.getElement();
       
       // Add click event to marker
       el.addEventListener('click', (e) => {
@@ -139,12 +143,12 @@ export const addPropertyMarkers = (
         onPropertySelect(property.id);
       });
       
-      // Add hover effects with proper timers
+      // Add hover effects for marker with better timing
       el.addEventListener('mouseenter', () => {
         console.log(`Marker mouseenter: Property ${property.id}`);
         isMouseOverMarker = true;
         
-        // Clear any existing close timeout when entering the marker
+        // Clear any existing close timeout when entering marker
         if (popupCloseTimeout) {
           window.clearTimeout(popupCloseTimeout);
           popupCloseTimeout = null;
@@ -160,59 +164,73 @@ export const addPropertyMarkers = (
         }
       });
       
-      // Get popup element for hover detection
-      const popupElement = popup.getElement();
+      // Add mouseleave for marker with delayed popup removal
+      el.addEventListener('mouseleave', () => {
+        console.log(`Marker mouseleave: Property ${property.id}`);
+        isMouseOverMarker = false;
+        
+        // Only schedule popup removal if not selected and popup not hovered
+        if (!isMouseOverPopup && !isSelected) {
+          popupCloseTimeout = window.setTimeout(() => {
+            if (!isMouseOverPopup && !isMouseOverMarker) {
+              console.log(`Removing popup after delay: Property ${property.id}`);
+              popup.remove();
+              el.classList.remove('hover-active');
+              el.style.filter = '';
+              el.style.zIndex = '';
+            }
+            popupCloseTimeout = null;
+          }, 300); // 300ms delay before closing popup
+        }
+      });
       
-      // Add event listeners to popup
+      // Add mouseenter for popup
       if (popupElement) {
+        // Add "gap" element to make popup interaction more reliable
+        const gap = document.createElement('div');
+        gap.className = 'marker-popup-gap';
+        popupElement.appendChild(gap);
+        
         popupElement.addEventListener('mouseenter', () => {
           console.log(`Popup mouseenter: Property ${property.id}`);
           isMouseOverPopup = true;
           
-          // Clear any existing close timeout when entering the popup
+          // Clear any existing close timeout
           if (popupCloseTimeout) {
             window.clearTimeout(popupCloseTimeout);
             popupCloseTimeout = null;
           }
         });
         
+        // Add mouseleave for popup with delayed removal
         popupElement.addEventListener('mouseleave', () => {
           console.log(`Popup mouseleave: Property ${property.id}`);
           isMouseOverPopup = false;
           
-          // Only schedule popup removal after both marker and popup are not hovered
+          // Only schedule popup removal if marker not hovered and not selected
           if (!isMouseOverMarker && !isSelected) {
             popupCloseTimeout = window.setTimeout(() => {
-              console.log(`Removing popup after leave delay: Property ${property.id}`);
-              popup.remove();
-              el.classList.remove('hover-active');
-              el.style.filter = '';
-              el.style.zIndex = '';
+              if (!isMouseOverMarker && !isMouseOverPopup) {
+                console.log(`Removing popup after delay: Property ${property.id}`);
+                popup.remove();
+                el.classList.remove('hover-active');
+                el.style.filter = '';
+                el.style.zIndex = '';
+              }
               popupCloseTimeout = null;
-            }, 300); // Added delay before closing popup
+            }, 300); // 300ms delay before closing popup
           }
         });
-      }
-      
-      // Update marker mouseleave to use delay
-      el.addEventListener('mouseleave', () => {
-        console.log(`Marker mouseleave: Property ${property.id}`);
-        isMouseOverMarker = false;
         
-        // Only schedule popup removal after both marker and popup are not hovered
-        if (!isMouseOverPopup && !isSelected) {
-          popupCloseTimeout = window.setTimeout(() => {
-            console.log(`Marker leave timeout check: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
-            if (!isMouseOverPopup) {
-              el.classList.remove('hover-active');
-              el.style.filter = '';
-              el.style.zIndex = '';
-              popup.remove();
-            }
-            popupCloseTimeout = null;
-          }, 300); // Added delay before closing popup
-        }
-      });
+        // Make sure links inside popup work properly
+        const links = popupElement.querySelectorAll('a');
+        links.forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Let the link's default action happen
+          });
+        });
+      }
       
       // For touch devices, handle popup toggle
       if ('ontouchstart' in window) {
@@ -229,6 +247,14 @@ export const addPropertyMarkers = (
             isPopupVisible = true;
           }
         });
+        
+        // Add touch event for popup to prevent it from closing
+        if (popupElement) {
+          popupElement.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            isPopupVisible = true;
+          });
+        }
       }
     } catch (error) {
       console.error(`Error creating marker for property ${property?.id || 'unknown'}:`, error);

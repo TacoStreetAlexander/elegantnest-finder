@@ -23,9 +23,20 @@
 .mapboxgl-popup-content {
   padding: 0 !important;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible !important; /* Changed from hidden to visible */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   pointer-events: auto !important; /* Ensure popup content catches mouse events */
+}
+
+/* Additional invisible area to improve hover experience */
+.marker-popup-gap {
+  position: absolute;
+  bottom: -15px;
+  left: 0;
+  right: 0;
+  height: 15px;
+  background: transparent;
+  pointer-events: auto !important;
 }
 
 .property-popup {
@@ -49,13 +60,8 @@
   transform: scale(1.2);
 }
 
-/* Add gap between popup and marker to prevent flicker */
-.marker-popup-gap {
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  right: 0;
-  height: 20px;
-  background: transparent;
-  pointer-events: auto;
+/* Hover active state */
+.marker.hover-active {
+  transform: scale(1.1);
+  z-index: 5;
 }
