@@ -41,27 +41,6 @@ const PropertyMapMarkers = memo(({
   useEffect(() => {
     console.log('Marker status updated:', { hasAddedMarkers });
   }, [hasAddedMarkers]);
-
-  // Effect to fix marker positioning when dialog closes
-  useEffect(() => {
-    // Add global styles to ensure markers remain absolutely positioned
-    const styleEl = document.createElement('style');
-    styleEl.id = 'marker-position-fix';
-    styleEl.textContent = `
-      .mapboxgl-marker {
-        position: absolute !important;
-      }
-    `;
-    document.head.appendChild(styleEl);
-
-    // Cleanup
-    return () => {
-      const existingStyle = document.getElementById('marker-position-fix');
-      if (existingStyle) {
-        existingStyle.remove();
-      }
-    };
-  }, []);
   
   return (
     <>
@@ -69,15 +48,7 @@ const PropertyMapMarkers = memo(({
         <PropertyDetailDialog
           property={selectedProperty}
           isOpen={true}
-          onClose={() => {
-            setSelectedProperty(null);
-            // Force reflow to maintain marker positions
-            setTimeout(() => {
-              if (map) {
-                map.resize();
-              }
-            }, 50);
-          }}
+          onClose={() => setSelectedProperty(null)}
         />
       )}
     </>
