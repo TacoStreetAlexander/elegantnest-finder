@@ -139,7 +139,10 @@ export const addPropertyMarkers = (
       el.addEventListener('mouseenter', () => {
         console.log(`Marker mouseenter: Property ${property.id} (selected: ${isSelected})`);
         if (!isSelected) {
-          el.style.transform = 'scale(1.1)';
+          // IMPORTANT: Only change the scale, not the full transform which would affect positioning
+          el.classList.add('hover-active');
+          el.style.filter = 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.3))';
+          el.style.zIndex = '10';
           popup.addTo(map);
         }
       });
@@ -166,9 +169,11 @@ export const addPropertyMarkers = (
             if (!isMouseOverMarker && !isSelected) {
               console.log(`Removing popup after leave: Property ${property.id} (marker hover: ${isMouseOverMarker})`);
               popup.remove();
-              el.style.transform = 'scale(1)';
+              el.classList.remove('hover-active');
+              el.style.filter = '';
+              el.style.zIndex = '';
             }
-          }, 100); // Add small delay to prevent flickering
+          }, 200); // Add small delay to prevent flickering
         });
       }
       
@@ -185,12 +190,14 @@ export const addPropertyMarkers = (
         setTimeout(() => {
           if (!isMouseOverPopup && !isSelected) {
             console.log(`Marker leave timeout check: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
-            el.style.transform = 'scale(1)';
+            el.classList.remove('hover-active');
+            el.style.filter = '';
+            el.style.zIndex = '';
             popup.remove();
           } else {
             console.log(`Keeping popup visible: Property ${property.id} (popup hover: ${isMouseOverPopup})`);
           }
-        }, 100); // Increased timeout to give more time to move to popup
+        }, 200); // Increased timeout to give more time to move to popup
       });
     } catch (error) {
       console.error(`Error creating marker for property ${property?.id || 'unknown'}:`, error);

@@ -7,6 +7,7 @@
   transition: transform 0.2s ease, filter 0.2s ease;
   transform-origin: center bottom;
   z-index: 1;
+  position: absolute !important; /* Ensure absolute positioning */
 }
 
 .marker:hover {

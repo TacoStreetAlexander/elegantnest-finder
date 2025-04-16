@@ -40,7 +40,7 @@ export const useMapMarkers = ({
     const handleDebugEvents = (e: MouseEvent) => {
       // Check if the event target is a marker or popup
       const target = e.target as HTMLElement;
-      if (!target) return;
+      if (!target || typeof target.closest !== 'function') return;
       
       // Log popup interactions
       if (target.closest('.property-popup')) {
@@ -204,6 +204,9 @@ export const useMapMarkers = ({
             }
             .popup-link {
               pointer-events: auto !important;
+            }
+            .marker.hover-active {
+              transform: scale(1.1);
             }
           `;
           document.head.appendChild(styleEl);
