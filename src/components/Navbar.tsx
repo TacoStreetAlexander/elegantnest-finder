@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Map } from 'lucide-react';
+import { Menu, X, Map, Heart } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { isLoggedIn } = useAuth();
   
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -14,6 +16,15 @@ const Navbar = () => {
     { name: 'Properties', path: '/properties' },
     { name: 'Map View', path: '/map', icon: <Map size={16} className="ml-1" /> }
   ];
+  
+  // Add Saved Apartments link only if user is logged in
+  if (isLoggedIn) {
+    navLinks.push({ 
+      name: 'Saved', 
+      path: '/saved', 
+      icon: <Heart size={16} className="ml-1" fill="currentColor" /> 
+    });
+  }
   
   const isActive = (path: string) => {
     if (path === '/' && location.pathname === '/') return true;

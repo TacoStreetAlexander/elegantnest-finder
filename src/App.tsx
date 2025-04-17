@@ -10,6 +10,7 @@ import AboutUs from "./pages/AboutUs";
 import HowItWorks from "./pages/HowItWorks";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
+import SavedApartments from "./pages/SavedApartments";
 import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +38,7 @@ const App = () => {
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/properties" element={<Properties />} />
               <Route path="/properties/:slug" element={<PropertyDetail />} />
+              <Route path="/saved" element={<SavedApartments />} />
               <Route path="/map" element={<MapView />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
