@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -9,6 +8,8 @@ import MapViewHeader from '../components/MapView/MapViewHeader';
 import PropertyListSection from '../components/MapView/PropertyList';
 import { useIsMobile } from '../hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { PropertyFiltersProvider } from '@/hooks/usePropertyFilters';
+import { PropertyFilters } from '@/components/PropertyFilters/PropertyFilters';
 
 const MapView = () => {
   const {
@@ -27,7 +28,6 @@ const MapView = () => {
   
   const isMobile = useIsMobile();
   
-  // Log component state for debugging
   useEffect(() => {
     console.log('MapView rendering:', {
       isLoading,
@@ -76,79 +76,86 @@ const MapView = () => {
   }
   
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Navbar />
-      
-      <div className="container-custom py-6">
-        <MapViewHeader 
-          metroRegions={metroRegions}
-          selectedRegion={selectedRegion}
-          handleRegionChange={handleRegionChange}
-          toggleMap={toggleMap}
-          showMap={showMap}
-          propertiesCount={filteredProperties.length}
-        />
+    <PropertyFiltersProvider>
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <Navbar />
         
-        {isMobile ? (
-          // Mobile layout with tabs - ALWAYS default to list view for better performance
-          <Tabs defaultValue="list" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="list">📋 List View</TabsTrigger>
-              <TabsTrigger value="map">🔍 Map View</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="list" className="h-[calc(100vh-16rem)]">
-              <PropertyListSection
-                listingRef={listingRef}
-                filteredProperties={filteredProperties}
-                selectedProperty={selectedProperty}
-                onSelectProperty={handlePropertySelect}
-                handleRegionChange={handleRegionChange}
-                selectedRegion={selectedRegion}
-              />
-            </TabsContent>
-            
-            <TabsContent value="map" className="h-[calc(100vh-16rem)]">
-              <div className="h-full">
+        <div className="container-custom py-6">
+          <MapViewHeader 
+            metroRegions={metroRegions}
+            selectedRegion={selectedRegion}
+            handleRegionChange={handleRegionChange}
+            toggleMap={toggleMap}
+            showMap={showMap}
+            propertiesCount={filteredProperties.length}
+          />
+          
+          <div className="mt-6">
+            <PropertyFilters 
+              properties={filteredProperties}
+              showMobileToggle={true}
+              onToggleMobileFilters={() => setShowMap(!showMap)}
+              isMobileFiltersOpen={showMap}
+            />
+          </div>
+          
+          {isMobile ? (
+            <Tabs defaultValue="list" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="list">📋 List View</TabsTrigger>
+                <TabsTrigger value="map">🔍 Map View</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="list" className="h-[calc(100vh-16rem)]">
+                <PropertyListSection
+                  listingRef={listingRef}
+                  filteredProperties={filteredProperties}
+                  selectedProperty={selectedProperty}
+                  onSelectProperty={handlePropertySelect}
+                  handleRegionChange={handleRegionChange}
+                  selectedRegion={selectedRegion}
+                />
+              </TabsContent>
+              
+              <TabsContent value="map" className="h-[calc(100vh-16rem)]">
+                <div className="h-full">
+                  <PropertyMap 
+                    properties={filteredProperties} 
+                    selectedPropertyId={selectedProperty}
+                    onPropertySelect={handlePropertySelect}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="flex h-[calc(100vh-16rem)] gap-6">
+              <div className="w-[30%] overflow-hidden">
+                <PropertyListSection
+                  listingRef={listingRef}
+                  filteredProperties={filteredProperties}
+                  selectedProperty={selectedProperty}
+                  onSelectProperty={handlePropertySelect}
+                  handleRegionChange={handleRegionChange}
+                  selectedRegion={selectedRegion}
+                />
+              </div>
+              
+              <div className="w-[70%] h-full">
                 <PropertyMap 
                   properties={filteredProperties} 
                   selectedPropertyId={selectedProperty}
                   onPropertySelect={handlePropertySelect}
                 />
               </div>
-            </TabsContent>
-          </Tabs>
-        ) : (
-          // Desktop layout with 30/70 split
-          <div className="flex h-[calc(100vh-16rem)] gap-6">
-            {/* Property listings - 30% width */}
-            <div className="w-[30%] overflow-hidden">
-              <PropertyListSection
-                listingRef={listingRef}
-                filteredProperties={filteredProperties}
-                selectedProperty={selectedProperty}
-                onSelectProperty={handlePropertySelect}
-                handleRegionChange={handleRegionChange}
-                selectedRegion={selectedRegion}
-              />
             </div>
-            
-            {/* Map - 70% width */}
-            <div className="w-[70%] h-full">
-              <PropertyMap 
-                properties={filteredProperties} 
-                selectedPropertyId={selectedProperty}
-                onPropertySelect={handlePropertySelect}
-              />
-            </div>
-          </div>
-        )}
+          )}
+        </div>
+        
+        <div className="mt-auto">
+          <Footer />
+        </div>
       </div>
-      
-      <div className="mt-auto">
-        <Footer />
-      </div>
-    </div>
+    </PropertyFiltersProvider>
   );
 };
 
