@@ -20,12 +20,12 @@ export function useAdminData() {
       // First, get the count of saved properties by property_id
       const { data: countData, error: countError } = await supabase
         .from('saved_properties')
-        .select('property_id, count', { count: 'exact' })
+        .select('property_id')
         .select(`
           property_id,
           count(*) as count
         `)
-        .groupBy('property_id')
+        .group('property_id')
         .order('count', { ascending: false });
       
       if (countError) throw countError;
@@ -35,7 +35,7 @@ export function useAdminData() {
         const propertyIds = countData.map(item => item.property_id);
         
         const { data: propertyData, error: propertyError } = await supabase
-          .from('"Senior Draft 3"')
+          .from('Senior Draft 3')
           .select('id, name, city')
           .in('id', propertyIds);
         
