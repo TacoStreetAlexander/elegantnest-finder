@@ -17,19 +17,32 @@ export function useAdminData() {
   const savedPropertiesQuery = useQuery({
     queryKey: ['admin', 'saved-properties'],
     queryFn: async () => {
-      // First, count saved properties and group by property_id
-      const { data: countData, error: countError } = await supabase
+      // Get all saved properties
+      const { data: savedData, error: savedError } = await supabase
         .from('saved_properties')
-        .select('property_id, count', { count: 'exact' })
-        .select()
-        .order('count', { ascending: false });
+        .select('*');
       
-      if (countError) throw countError;
+      if (savedError) throw savedError;
       
-      // Then, fetch the property details for each property_id
-      if (countData && countData.length > 0) {
-        const propertyIds = countData.map(item => item.property_id);
+      // Count occurrences of each property_id
+      const propertyCounts = savedData.reduce((acc, item) => {
+        acc[item.property_id] = (acc[item.property_id] || 0) + 1;
+        return acc;
+      }, {});
+      
+      // Convert to array and sort by count
+      const sortedCounts = Object.entries(propertyCounts)
+        .map(([property_id, count]) => ({ 
+          property_id: parseInt(property_id), 
+          count 
+        }))
+        .sort((a, b) => b.count - a.count);
+      
+      // If we have properties to look up
+      if (sortedCounts.length > 0) {
+        const propertyIds = sortedCounts.map(item => item.property_id);
         
+        // Fetch property details
         const { data: propertyData, error: propertyError } = await supabase
           .from('Senior Draft 3')
           .select('id, name, city')
@@ -38,7 +51,7 @@ export function useAdminData() {
         if (propertyError) throw propertyError;
         
         // Combine the count with property details
-        return countData.map(countItem => {
+        return sortedCounts.map(countItem => {
           const property = propertyData?.find(p => p.id === countItem.property_id);
           return {
             property_id: countItem.property_id,
