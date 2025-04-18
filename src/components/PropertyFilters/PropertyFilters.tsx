@@ -97,7 +97,7 @@ export function PropertyFilters({
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className={`space-y-4 ${showMobileToggle ? 'lg:block' : ''} ${isMobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
         {isLoggedIn && (
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">Show Saved Only</label>
