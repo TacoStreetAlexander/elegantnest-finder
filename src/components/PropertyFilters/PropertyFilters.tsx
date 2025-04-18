@@ -193,3 +193,4 @@ export function PropertyFilters({
       </div>
     </div>
   );
+}
