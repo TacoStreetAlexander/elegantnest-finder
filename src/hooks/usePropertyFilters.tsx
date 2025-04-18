@@ -1,7 +1,8 @@
 
 import { create } from 'zustand';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
-interface PropertyFiltersState {
+export interface PropertyFiltersState {
   metroRegion: string;
   selectedBedrooms: string[];
   priceRange: [number, number];
@@ -34,3 +35,26 @@ export const usePropertyFilters = create<PropertyFiltersState>((set) => ({
     showSavedOnly: false
   })
 }));
+
+// Create a context for providing the store
+const PropertyFiltersContext = createContext<PropertyFiltersState | undefined>(undefined);
+
+// Create a provider component
+export const PropertyFiltersProvider = ({ children }: { children: ReactNode }) => {
+  const store = usePropertyFilters();
+  return (
+    <PropertyFiltersContext.Provider value={store}>
+      {children}
+    </PropertyFiltersContext.Provider>
+  );
+};
+
+// Optional custom hook for consuming the context
+export const usePropertyFiltersContext = () => {
+  const context = useContext(PropertyFiltersContext);
+  if (context === undefined) {
+    throw new Error('usePropertyFiltersContext must be used within a PropertyFiltersProvider');
+  }
+  return context;
+};
+
