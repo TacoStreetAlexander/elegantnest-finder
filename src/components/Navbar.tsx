@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Map, Heart } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { AuthButtons } from './AuthButtons';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,7 +17,6 @@ const Navbar = () => {
     { name: 'Map View', path: '/map', icon: <Map size={16} className="ml-1" /> }
   ];
   
-  // Add Saved Apartments link only if user is logged in
   if (isLoggedIn) {
     navLinks.push({ 
       name: 'Saved', 
@@ -36,13 +35,11 @@ const Navbar = () => {
     <header className="w-full bg-white border-b border-border/40 sticky top-0 z-30">
       <div className="container-custom">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link to="/" className="font-serif text-xl md:text-2xl font-bold text-primary">
             Senior Luxury Living
           </Link>
           
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -57,9 +54,9 @@ const Navbar = () => {
                 {link.icon}
               </Link>
             ))}
+            <AuthButtons />
           </nav>
           
-          {/* Mobile Navigation Toggle */}
           <button
             className="md:hidden text-foreground p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -70,7 +67,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile Navigation Menu */}
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-border/40 absolute w-full z-20 shadow-md">
           <nav className="container-custom py-4 flex flex-col">
@@ -89,6 +85,9 @@ const Navbar = () => {
                 {link.icon}
               </Link>
             ))}
+            <div className="pt-2 border-t border-border/40 mt-2">
+              <AuthButtons />
+            </div>
           </nav>
         </div>
       )}

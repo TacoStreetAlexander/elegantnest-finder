@@ -11,35 +11,33 @@ export type Database = {
     Tables: {
       saved_properties: {
         Row: {
-          user_id: string;
-          property_id: number;
-          created_at?: string;
-        };
+          created_at: string | null
+          id: string
+          property_id: number
+          user_id: string
+        }
         Insert: {
-          user_id: string;
-          property_id: number;
-          created_at?: string;
-        };
+          created_at?: string | null
+          id?: string
+          property_id: number
+          user_id: string
+        }
         Update: {
-          user_id?: string;
-          property_id?: number;
-          created_at?: string;
-        };
+          created_at?: string | null
+          id?: string
+          property_id?: number
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "saved_properties_property_id_fkey";
-            columns: ["property_id"];
-            referencedRelation: "Senior Draft 3";
-            referencedColumns: ["id"];
+            foreignKeyName: "saved_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "Senior Draft 3"
+            referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "saved_properties_user_id_fkey";
-            columns: ["user_id"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          }
-        ];
-      };
+        ]
+      }
       "Senior Draft 3": {
         Row: {
           "1brstart": string | null

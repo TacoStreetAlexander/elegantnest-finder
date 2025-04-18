@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,8 +12,8 @@ import PropertyDetail from "./pages/PropertyDetail";
 import SavedApartments from "./pages/SavedApartments";
 import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -40,7 +39,7 @@ const App = () => {
               <Route path="/properties/:slug" element={<PropertyDetail />} />
               <Route path="/saved" element={<SavedApartments />} />
               <Route path="/map" element={<MapView />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
