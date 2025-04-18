@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -94,8 +95,8 @@ const MapView = () => {
             <PropertyFilters 
               properties={filteredProperties}
               showMobileToggle={true}
-              onToggleMobileFilters={() => setShowMap(!showMap)}
-              isMobileFiltersOpen={showMap}
+              onToggleMobileFilters={toggleMap}
+              isMobileFiltersOpen={!showMap}
             />
           </div>
           
