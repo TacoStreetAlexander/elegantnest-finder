@@ -21,7 +21,7 @@ export function PropertyFiltersProvider({ children }: { children: ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Initialize state from URL parameters
-  const [metroRegion, setMetroRegion] = useState(searchParams.get('region') || '');
+  const [metroRegion, setMetroRegion] = useState(searchParams.get('region') || 'all-regions');
   const [selectedBedrooms, setSelectedBedrooms] = useState<string[]>(
     searchParams.get('bedrooms')?.split(',').filter(Boolean) || []
   );
@@ -42,7 +42,7 @@ export function PropertyFiltersProvider({ children }: { children: ReactNode }) {
   ) => {
     const params = new URLSearchParams(searchParams);
     
-    if (region) {
+    if (region && region !== 'all-regions') {
       params.set('region', region);
     } else {
       params.delete('region');
@@ -67,13 +67,15 @@ export function PropertyFiltersProvider({ children }: { children: ReactNode }) {
   }, [searchParams, setSearchParams]);
 
   const handleSetMetroRegion = useCallback((region: string) => {
-    setMetroRegion(region);
-    updateSearchParams(region, selectedBedrooms, priceRange, selectedAmenities);
+    setMetroRegion(region || 'all-regions'); // Ensure we never set an empty string
+    updateSearchParams(region || 'all-regions', selectedBedrooms, priceRange, selectedAmenities);
   }, [selectedBedrooms, priceRange, selectedAmenities, updateSearchParams]);
 
   const handleSetSelectedBedrooms = useCallback((bedrooms: string[]) => {
-    setSelectedBedrooms(bedrooms);
-    updateSearchParams(metroRegion, bedrooms, priceRange, selectedAmenities);
+    // Filter out any empty strings just to be safe
+    const filteredBedrooms = bedrooms.filter(Boolean);
+    setSelectedBedrooms(filteredBedrooms);
+    updateSearchParams(metroRegion, filteredBedrooms, priceRange, selectedAmenities);
   }, [metroRegion, priceRange, selectedAmenities, updateSearchParams]);
 
   const handleSetPriceRange = useCallback((range: [number, number]) => {
@@ -82,12 +84,14 @@ export function PropertyFiltersProvider({ children }: { children: ReactNode }) {
   }, [metroRegion, selectedBedrooms, selectedAmenities, updateSearchParams]);
 
   const handleSetSelectedAmenities = useCallback((amenities: string[]) => {
-    setSelectedAmenities(amenities);
-    updateSearchParams(metroRegion, selectedBedrooms, priceRange, amenities);
+    // Filter out any empty strings just to be safe
+    const filteredAmenities = amenities.filter(Boolean);
+    setSelectedAmenities(filteredAmenities);
+    updateSearchParams(metroRegion, selectedBedrooms, priceRange, filteredAmenities);
   }, [metroRegion, selectedBedrooms, priceRange, updateSearchParams]);
 
   const clearFilters = useCallback(() => {
-    setMetroRegion('');
+    setMetroRegion('all-regions'); // Use 'all-regions' instead of empty string
     setSelectedBedrooms([]);
     setPriceRange([0, 10000]);
     setSelectedAmenities([]);
@@ -132,7 +136,7 @@ export function filterProperties(
 ): Property[] {
   return properties.filter(property => {
     // Metro region filter
-    if (filters.metroRegion && property.metroRegion !== filters.metroRegion) {
+    if (filters.metroRegion && filters.metroRegion !== 'all-regions' && property.metroRegion !== filters.metroRegion) {
       return false;
     }
     

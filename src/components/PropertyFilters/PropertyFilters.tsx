@@ -103,7 +103,7 @@ export function PropertyFilters({
               <SelectValue placeholder="All Regions" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Regions</SelectItem>
+              <SelectItem value="all-regions">All Regions</SelectItem>
               {metroRegions.map(region => (
                 <SelectItem key={region} value={region}>
                   {region}
@@ -193,4 +193,3 @@ export function PropertyFilters({
       </div>
     </div>
   );
-}
