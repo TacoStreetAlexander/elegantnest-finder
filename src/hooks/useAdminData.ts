@@ -17,21 +17,42 @@ export function useAdminData() {
   const savedPropertiesQuery = useQuery({
     queryKey: ['admin', 'saved-properties'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First, get the count of saved properties by property_id
+      const { data: countData, error: countError } = await supabase
         .from('saved_properties')
+        .select('property_id, count', { count: 'exact' })
         .select(`
           property_id,
-          "Senior Draft 3" (
-            name,
-            city
-          ),
-          count: property_id(count)
+          count(*) as count
         `)
-        .group('property_id, "Senior Draft 3".name, "Senior Draft 3".city')
+        .groupBy('property_id')
         .order('count', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (countError) throw countError;
+      
+      // Then, fetch the property details for each property_id
+      if (countData && countData.length > 0) {
+        const propertyIds = countData.map(item => item.property_id);
+        
+        const { data: propertyData, error: propertyError } = await supabase
+          .from('"Senior Draft 3"')
+          .select('id, name, city')
+          .in('id', propertyIds);
+        
+        if (propertyError) throw propertyError;
+        
+        // Combine the count with property details
+        return countData.map(countItem => {
+          const property = propertyData?.find(p => p.id === countItem.property_id);
+          return {
+            property_id: countItem.property_id,
+            count: countItem.count,
+            "Senior Draft 3": property || { name: 'Unknown', city: 'Unknown' }
+          };
+        });
+      }
+      
+      return [];
     },
   });
 
