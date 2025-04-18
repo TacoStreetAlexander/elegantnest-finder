@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +23,14 @@ const Admin = () => {
   const navigate = useNavigate();
   const { isLoggedIn, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin();
-  const { users, userSavedProperties, isLoading, error } = useAdminData();
+  const { 
+    users, 
+    userSavedProperties, 
+    mostSavedProperties, 
+    leads, 
+    isLoading, 
+    error 
+  } = useAdminData();
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -140,7 +148,7 @@ const Admin = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {savedProperties.map((property: any) => (
+                  {mostSavedProperties.map((property: any) => (
                     <TableRow key={property.property_id}>
                       <TableCell>{property["Senior Draft 3"]?.name || 'Unknown'}</TableCell>
                       <TableCell>{property["Senior Draft 3"]?.city || 'Unknown'}</TableCell>
