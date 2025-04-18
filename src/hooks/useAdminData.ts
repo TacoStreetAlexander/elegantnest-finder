@@ -17,15 +17,13 @@ export function useAdminData() {
   const savedPropertiesQuery = useQuery({
     queryKey: ['admin', 'saved-properties'],
     queryFn: async () => {
-      // First, get the count of saved properties by property_id
+      // Use a raw SQL query with the count aggregation and group by
       const { data: countData, error: countError } = await supabase
         .from('saved_properties')
-        .select('property_id')
         .select(`
           property_id,
-          count(*) as count
+          count:count(*)
         `)
-        .group('property_id')
         .order('count', { ascending: false });
       
       if (countError) throw countError;
