@@ -1,8 +1,9 @@
-
 import { useEffect, useMemo } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { useSavedProperties } from '@/hooks/useSavedProperties';
 import {
   Select,
   SelectContent,
@@ -12,13 +13,7 @@ import {
 } from '@/components/ui/select';
 import { usePropertyFilters } from '@/hooks/usePropertyFilters';
 import { Property } from '@/types/property';
-
-interface PropertyFiltersProps {
-  properties: Property[];
-  showMobileToggle?: boolean;
-  onToggleMobileFilters?: () => void;
-  isMobileFiltersOpen?: boolean;
-}
+import { useAuth } from '@/hooks/useAuth';
 
 const COMMON_AMENITIES = [
   'Gym',
@@ -32,12 +27,21 @@ const COMMON_AMENITIES = [
 
 const BEDROOM_TYPES = ['Studio', '1', '2', '3'];
 
+interface PropertyFiltersProps {
+  properties: Property[];
+  showMobileToggle?: boolean;
+  onToggleMobileFilters?: () => void;
+  isMobileFiltersOpen?: boolean;
+}
+
 export function PropertyFilters({
   properties,
   showMobileToggle = false,
   onToggleMobileFilters,
   isMobileFiltersOpen
 }: PropertyFiltersProps) {
+  const { isLoggedIn } = useAuth();
+  const { savedPropertyIds } = useSavedProperties();
   const {
     metroRegion,
     setMetroRegion,
@@ -47,23 +51,22 @@ export function PropertyFilters({
     setPriceRange,
     selectedAmenities,
     setSelectedAmenities,
+    showSavedOnly,
+    setShowSavedOnly,
     clearFilters
   } = usePropertyFilters();
 
-  // Extract unique metro regions from properties
   const metroRegions = useMemo(() => {
     const regions = Array.from(new Set(properties.map(p => p.metroRegion).filter(Boolean)));
     return regions.sort();
   }, [properties]);
 
-  // Calculate price range from properties
   const [minPrice, maxPrice] = useMemo(() => {
     if (properties.length === 0) return [0, 10000];
     const prices = properties.map(p => p.priceRange.min);
     return [Math.min(...prices), Math.max(...prices)];
   }, [properties]);
 
-  // Reset price range when min/max changes
   useEffect(() => {
     if (priceRange[0] < minPrice || priceRange[1] > maxPrice) {
       setPriceRange([minPrice, maxPrice]);
@@ -71,7 +74,7 @@ export function PropertyFilters({
   }, [minPrice, maxPrice]);
 
   const hasActiveFilters = metroRegion || selectedBedrooms.length > 0 || 
-    selectedAmenities.length > 0 || priceRange[0] > minPrice || priceRange[1] < maxPrice;
+    selectedAmenities.length > 0 || priceRange[0] > minPrice || priceRange[1] < maxPrice || showSavedOnly;
 
   return (
     <div className="space-y-6">
@@ -95,7 +98,17 @@ export function PropertyFilters({
       )}
 
       <div className="space-y-4">
-        {/* Metro Region Filter */}
+        {isLoggedIn && (
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Show Saved Only</label>
+            <Switch 
+              checked={showSavedOnly}
+              onCheckedChange={setShowSavedOnly}
+              aria-label="Toggle saved properties filter"
+            />
+          </div>
+        )}
+
         <div>
           <label className="text-sm font-medium mb-2 block">Metro Region</label>
           <Select value={metroRegion} onValueChange={setMetroRegion}>
@@ -113,7 +126,6 @@ export function PropertyFilters({
           </Select>
         </div>
 
-        {/* Bedroom Types Filter */}
         <div>
           <label className="text-sm font-medium mb-2 block">Bedrooms</label>
           <div className="flex flex-wrap gap-2">
@@ -136,7 +148,6 @@ export function PropertyFilters({
           </div>
         </div>
 
-        {/* Price Range Filter */}
         <div>
           <label className="text-sm font-medium mb-2 block">Price Range</label>
           <div className="px-2">
@@ -155,7 +166,6 @@ export function PropertyFilters({
           </div>
         </div>
 
-        {/* Amenities Filter */}
         <div>
           <label className="text-sm font-medium mb-2 block">Amenities</label>
           <div className="flex flex-wrap gap-2">
@@ -178,7 +188,6 @@ export function PropertyFilters({
           </div>
         </div>
 
-        {/* Reset Filters */}
         {hasActiveFilters && (
           <Button
             variant="outline"

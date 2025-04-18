@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -11,6 +10,9 @@ import { useIsMobile } from '../hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { PropertyFiltersProvider } from '@/hooks/usePropertyFilters';
 import { PropertyFilters } from '@/components/PropertyFilters/PropertyFilters';
+import { useMemo } from 'react';
+import { usePropertyFilters } from '@/hooks/usePropertyFilters';
+import { useSavedProperties } from '@/hooks/useSavedProperties';
 
 const MapView = () => {
   const {
@@ -27,18 +29,26 @@ const MapView = () => {
     toggleMap
   } = useMapViewState();
   
+  const { showSavedOnly } = usePropertyFilters();
+  const { savedPropertyIds } = useSavedProperties();
+  
+  const displayedProperties = useMemo(() => {
+    if (!showSavedOnly) return filteredProperties;
+    return filteredProperties.filter(property => savedPropertyIds.includes(property.id));
+  }, [filteredProperties, showSavedOnly, savedPropertyIds]);
+
   const isMobile = useIsMobile();
   
   useEffect(() => {
     console.log('MapView rendering:', {
       isLoading,
       hasError: !!error,
-      propertiesCount: filteredProperties.length,
+      propertiesCount: displayedProperties.length,
       selectedRegion,
       selectedProperty,
       isMobile
     });
-  }, [isLoading, error, filteredProperties.length, selectedRegion, selectedProperty, isMobile]);
+  }, [isLoading, error, displayedProperties.length, selectedRegion, selectedProperty, isMobile]);
   
   if (isLoading) {
     return (
@@ -88,12 +98,12 @@ const MapView = () => {
             handleRegionChange={handleRegionChange}
             toggleMap={toggleMap}
             showMap={showMap}
-            propertiesCount={filteredProperties.length}
+            propertiesCount={displayedProperties.length}
           />
           
           <div className="mt-6">
             <PropertyFilters 
-              properties={filteredProperties}
+              properties={displayedProperties}
               showMobileToggle={true}
               onToggleMobileFilters={toggleMap}
               isMobileFiltersOpen={!showMap}
@@ -110,7 +120,7 @@ const MapView = () => {
               <TabsContent value="list" className="h-[calc(100vh-16rem)]">
                 <PropertyListSection
                   listingRef={listingRef}
-                  filteredProperties={filteredProperties}
+                  filteredProperties={displayedProperties}
                   selectedProperty={selectedProperty}
                   onSelectProperty={handlePropertySelect}
                   handleRegionChange={handleRegionChange}
@@ -121,7 +131,7 @@ const MapView = () => {
               <TabsContent value="map" className="h-[calc(100vh-16rem)]">
                 <div className="h-full">
                   <PropertyMap 
-                    properties={filteredProperties} 
+                    properties={displayedProperties} 
                     selectedPropertyId={selectedProperty}
                     onPropertySelect={handlePropertySelect}
                   />
@@ -133,7 +143,7 @@ const MapView = () => {
               <div className="w-[30%] overflow-hidden">
                 <PropertyListSection
                   listingRef={listingRef}
-                  filteredProperties={filteredProperties}
+                  filteredProperties={displayedProperties}
                   selectedProperty={selectedProperty}
                   onSelectProperty={handlePropertySelect}
                   handleRegionChange={handleRegionChange}
@@ -143,7 +153,7 @@ const MapView = () => {
               
               <div className="w-[70%] h-full">
                 <PropertyMap 
-                  properties={filteredProperties} 
+                  properties={displayedProperties} 
                   selectedPropertyId={selectedProperty}
                   onPropertySelect={handlePropertySelect}
                 />

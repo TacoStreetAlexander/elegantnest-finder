@@ -1,174 +1,36 @@
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Property } from '@/types/property';
+import { create } from 'zustand';
 
-interface FilterContextType {
+interface PropertyFiltersState {
   metroRegion: string;
-  setMetroRegion: (region: string) => void;
   selectedBedrooms: string[];
-  setSelectedBedrooms: (bedrooms: string[]) => void;
   priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
   selectedAmenities: string[];
+  showSavedOnly: boolean;
+  setMetroRegion: (region: string) => void;
+  setSelectedBedrooms: (bedrooms: string[]) => void;
+  setPriceRange: (range: [number, number]) => void;
   setSelectedAmenities: (amenities: string[]) => void;
+  setShowSavedOnly: (show: boolean) => void;
   clearFilters: () => void;
 }
 
-const FilterContext = createContext<FilterContextType | undefined>(undefined);
-
-export function PropertyFiltersProvider({ children }: { children: ReactNode }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  
-  // Initialize state from URL parameters
-  const [metroRegion, setMetroRegion] = useState(searchParams.get('region') || 'all-regions');
-  const [selectedBedrooms, setSelectedBedrooms] = useState<string[]>(
-    searchParams.get('bedrooms')?.split(',').filter(Boolean) || []
-  );
-  const [priceRange, setPriceRange] = useState<[number, number]>([
-    parseInt(searchParams.get('minPrice') || '0'),
-    parseInt(searchParams.get('maxPrice') || '10000')
-  ]);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
-    searchParams.get('amenities')?.split(',').filter(Boolean) || []
-  );
-
-  // Update URL when filters change
-  const updateSearchParams = useCallback((
-    region: string,
-    bedrooms: string[],
-    range: [number, number],
-    amenities: string[]
-  ) => {
-    const params = new URLSearchParams(searchParams);
-    
-    if (region && region !== 'all-regions') {
-      params.set('region', region);
-    } else {
-      params.delete('region');
-    }
-    
-    if (bedrooms.length > 0) {
-      params.set('bedrooms', bedrooms.join(','));
-    } else {
-      params.delete('bedrooms');
-    }
-    
-    params.set('minPrice', range[0].toString());
-    params.set('maxPrice', range[1].toString());
-    
-    if (amenities.length > 0) {
-      params.set('amenities', amenities.join(','));
-    } else {
-      params.delete('amenities');
-    }
-    
-    setSearchParams(params);
-  }, [searchParams, setSearchParams]);
-
-  const handleSetMetroRegion = useCallback((region: string) => {
-    setMetroRegion(region || 'all-regions'); // Ensure we never set an empty string
-    updateSearchParams(region || 'all-regions', selectedBedrooms, priceRange, selectedAmenities);
-  }, [selectedBedrooms, priceRange, selectedAmenities, updateSearchParams]);
-
-  const handleSetSelectedBedrooms = useCallback((bedrooms: string[]) => {
-    // Filter out any empty strings just to be safe
-    const filteredBedrooms = bedrooms.filter(Boolean);
-    setSelectedBedrooms(filteredBedrooms);
-    updateSearchParams(metroRegion, filteredBedrooms, priceRange, selectedAmenities);
-  }, [metroRegion, priceRange, selectedAmenities, updateSearchParams]);
-
-  const handleSetPriceRange = useCallback((range: [number, number]) => {
-    setPriceRange(range);
-    updateSearchParams(metroRegion, selectedBedrooms, range, selectedAmenities);
-  }, [metroRegion, selectedBedrooms, selectedAmenities, updateSearchParams]);
-
-  const handleSetSelectedAmenities = useCallback((amenities: string[]) => {
-    // Filter out any empty strings just to be safe
-    const filteredAmenities = amenities.filter(Boolean);
-    setSelectedAmenities(filteredAmenities);
-    updateSearchParams(metroRegion, selectedBedrooms, priceRange, filteredAmenities);
-  }, [metroRegion, selectedBedrooms, priceRange, updateSearchParams]);
-
-  const clearFilters = useCallback(() => {
-    setMetroRegion('all-regions'); // Use 'all-regions' instead of empty string
-    setSelectedBedrooms([]);
-    setPriceRange([0, 10000]);
-    setSelectedAmenities([]);
-    setSearchParams(new URLSearchParams());
-  }, [setSearchParams]);
-
-  return (
-    <FilterContext.Provider
-      value={{
-        metroRegion,
-        setMetroRegion: handleSetMetroRegion,
-        selectedBedrooms,
-        setSelectedBedrooms: handleSetSelectedBedrooms,
-        priceRange,
-        setPriceRange: handleSetPriceRange,
-        selectedAmenities,
-        setSelectedAmenities: handleSetSelectedAmenities,
-        clearFilters
-      }}
-    >
-      {children}
-    </FilterContext.Provider>
-  );
-}
-
-export function usePropertyFilters() {
-  const context = useContext(FilterContext);
-  if (!context) {
-    throw new Error('usePropertyFilters must be used within a PropertyFiltersProvider');
-  }
-  return context;
-}
-
-export function filterProperties(
-  properties: Property[],
-  filters: {
-    metroRegion: string;
-    selectedBedrooms: string[];
-    priceRange: [number, number];
-    selectedAmenities: string[];
-  }
-): Property[] {
-  return properties.filter(property => {
-    // Metro region filter
-    if (filters.metroRegion && filters.metroRegion !== 'all-regions' && property.metroRegion !== filters.metroRegion) {
-      return false;
-    }
-    
-    // Bedroom filter
-    if (filters.selectedBedrooms.length > 0) {
-      const hasMatchingBedroom = filters.selectedBedrooms.some(bedType => {
-        if (bedType === 'Studio') {
-          return property.floorPlans.some(plan => 
-            plan.name.toLowerCase().includes('studio') || 
-            (plan.bedrooms === 0)
-          );
-        }
-        const numBedrooms = parseInt(bedType);
-        return property.floorPlans.some(plan => plan.bedrooms === numBedrooms);
-      });
-      if (!hasMatchingBedroom) return false;
-    }
-    
-    // Price range filter
-    const propertyMinPrice = property.priceRange.min;
-    if (propertyMinPrice < filters.priceRange[0] || propertyMinPrice > filters.priceRange[1]) {
-      return false;
-    }
-    
-    // Amenities filter
-    if (filters.selectedAmenities.length > 0) {
-      const hasAllAmenities = filters.selectedAmenities.every(amenity =>
-        property.amenities.some(a => a.toLowerCase().includes(amenity.toLowerCase()))
-      );
-      if (!hasAllAmenities) return false;
-    }
-    
-    return true;
-  });
-}
+export const usePropertyFilters = create<PropertyFiltersState>((set) => ({
+  metroRegion: 'all-regions',
+  selectedBedrooms: [],
+  priceRange: [0, 10000],
+  selectedAmenities: [],
+  showSavedOnly: false,
+  setMetroRegion: (region) => set({ metroRegion: region }),
+  setSelectedBedrooms: (bedrooms) => set({ selectedBedrooms: bedrooms }),
+  setPriceRange: (range) => set({ priceRange: range }),
+  setSelectedAmenities: (amenities) => set({ selectedAmenities: amenities }),
+  setShowSavedOnly: (show) => set({ showSavedOnly: show }),
+  clearFilters: () => set({
+    metroRegion: 'all-regions',
+    selectedBedrooms: [],
+    priceRange: [0, 10000],
+    selectedAmenities: [],
+    showSavedOnly: false
+  })
+}));
