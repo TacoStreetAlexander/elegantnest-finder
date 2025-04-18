@@ -17,7 +17,7 @@ const SavedApartments = () => {
 
   useEffect(() => {
     const fetchSavedProperties = async () => {
-      if (!isLoggedIn || !userId || !savedProperties.length === 0) {
+      if (!isLoggedIn || !userId) {
         setSavedProperties([]);
         setLoading(false);
         return;
@@ -48,7 +48,7 @@ const SavedApartments = () => {
               state: propertyData.state || '',
               zipCode: propertyData.zipCode?.toString() || '',
               metroRegion: propertyData.metroregion || undefined,
-              propertyType: 'Independent Living',
+              propertyType: 'Independent Living' as const, // Fix: Cast to one of the allowed values
               priceRange: {
                 min: parseInt(propertyData["1brstart"] || '0'),
                 max: parseInt(propertyData["2brstart"] || '0')
@@ -93,7 +93,7 @@ const SavedApartments = () => {
     };
 
     fetchSavedProperties();
-  }, [isLoggedIn, userId, savedProperties.length]);
+  }, [isLoggedIn, userId]);
 
   if (!isLoggedIn) {
     return (
