@@ -69,7 +69,7 @@ const SavedApartments = () => {
                 image: '/placeholder.svg',
                 price: parseInt(propertyData["1brstart"] || '0')
               }],
-              availability: 'Available',
+              availability: 'Available' as const, // Fix: Cast to one of the allowed values
               contactInfo: {
                 phone: '',
                 email: ''
