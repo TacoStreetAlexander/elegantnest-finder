@@ -13,78 +13,45 @@ export function useAdminData() {
     },
   });
 
-  // Query to fetch most saved properties
-  const savedPropertiesQuery = useQuery({
-    queryKey: ['admin', 'saved-properties'],
+  // Query to fetch saved properties for all users
+  const userSavedPropertiesQuery = useQuery({
+    queryKey: ['admin', 'user-saved-properties'],
     queryFn: async () => {
-      // Get all saved properties
       const { data: savedData, error: savedError } = await supabase
         .from('saved_properties')
-        .select('*');
+        .select(`
+          user_id,
+          property_id,
+          "Senior Draft 3" (
+            id,
+            name,
+            city
+          )
+        `);
       
       if (savedError) throw savedError;
       
-      // Count occurrences of each property_id
-      const propertyCounts: Record<string, number> = savedData.reduce((acc: Record<string, number>, item) => {
-        const propId = item.property_id.toString();
-        acc[propId] = (acc[propId] || 0) + 1;
+      // Group properties by user_id
+      const userProperties = savedData.reduce((acc: Record<string, any[]>, item) => {
+        if (!acc[item.user_id]) {
+          acc[item.user_id] = [];
+        }
+        acc[item.user_id].push({
+          property_id: item.property_id,
+          name: item["Senior Draft 3"]?.name || 'Unknown',
+          city: item["Senior Draft 3"]?.city || 'Unknown'
+        });
         return acc;
       }, {});
       
-      // Convert to array and sort by count
-      const sortedCounts = Object.entries(propertyCounts)
-        .map(([property_id, count]) => ({ 
-          property_id: parseInt(property_id), 
-          count: count as number
-        }))
-        .sort((a, b) => (b.count as number) - (a.count as number));
-      
-      // If we have properties to look up
-      if (sortedCounts.length > 0) {
-        const propertyIds = sortedCounts.map(item => item.property_id);
-        
-        // Fetch property details
-        const { data: propertyData, error: propertyError } = await supabase
-          .from('Senior Draft 3')
-          .select('id, name, city')
-          .in('id', propertyIds);
-        
-        if (propertyError) throw propertyError;
-        
-        // Combine the count with property details
-        return sortedCounts.map(countItem => {
-          const property = propertyData?.find(p => p.id === countItem.property_id);
-          return {
-            property_id: countItem.property_id,
-            count: countItem.count,
-            "Senior Draft 3": property || { name: 'Unknown', city: 'Unknown' }
-          };
-        });
-      }
-      
-      return [];
-    },
-  });
-
-  // Query to fetch leads
-  const leadsQuery = useQuery({
-    queryKey: ['admin', 'leads'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      return userProperties;
     },
   });
 
   return {
     users: usersQuery.data ?? [],
-    savedProperties: savedPropertiesQuery.data ?? [],
-    leads: leadsQuery.data ?? [],
-    isLoading: usersQuery.isLoading || savedPropertiesQuery.isLoading || leadsQuery.isLoading,
-    error: usersQuery.error || savedPropertiesQuery.error || leadsQuery.error,
+    userSavedProperties: userSavedPropertiesQuery.data ?? {},
+    isLoading: usersQuery.isLoading || userSavedPropertiesQuery.isLoading,
+    error: usersQuery.error || userSavedPropertiesQuery.error,
   };
 }

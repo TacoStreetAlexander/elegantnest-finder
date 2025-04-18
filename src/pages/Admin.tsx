@@ -22,7 +22,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { isLoggedIn, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin();
-  const { users, savedProperties, leads, isLoading, error } = useAdminData();
+  const { users, userSavedProperties, isLoading, error } = useAdminData();
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -86,10 +86,10 @@ const Admin = () => {
         <h1 className="text-3xl font-serif font-bold mb-6">Admin Dashboard</h1>
         
         <div className="grid gap-6">
-          {/* Users Table */}
+          {/* Users and Their Saved Properties */}
           <Card>
             <CardHeader>
-              <CardTitle>Registered Users</CardTitle>
+              <CardTitle>Users and Saved Properties</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -97,13 +97,27 @@ const Admin = () => {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Created At</TableHead>
+                    <TableHead>Saved Properties</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow key={user.id} className="group">
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {userSavedProperties[user.id]?.length > 0 ? (
+                          <div className="space-y-2">
+                            {userSavedProperties[user.id].map((property: any) => (
+                              <div key={property.property_id} className="text-sm">
+                                {property.name} - {property.city}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">No saved listings yet.</span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
