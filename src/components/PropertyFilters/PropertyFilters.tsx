@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Dumbbell, Waves, PawPrint, Utensils, Activity, Bus, Shield } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useSavedProperties } from '@/hooks/useSavedProperties';
 import {
@@ -16,13 +16,13 @@ import { Property } from '@/types/property';
 import { useAuth } from '@/hooks/useAuth';
 
 const COMMON_AMENITIES = [
-  'Gym',
-  'Pool',
-  'Pet Friendly',
-  'Dining',
-  'Activities',
-  'Transportation',
-  'Security'
+  { name: 'Gym', icon: Dumbbell },
+  { name: 'Pool', icon: Waves },
+  { name: 'Pet Friendly', icon: PawPrint },
+  { name: 'Dining', icon: Utensils },
+  { name: 'Activities', icon: Activity },
+  { name: 'Transportation', icon: Bus },
+  { name: 'Security', icon: Shield }
 ];
 
 const BEDROOM_TYPES = ['Studio', '1', '2', '3'];
@@ -169,20 +169,22 @@ export function PropertyFilters({
         <div>
           <label className="text-sm font-medium mb-2 block">Amenities</label>
           <div className="flex flex-wrap gap-2">
-            {COMMON_AMENITIES.map(amenity => (
+            {COMMON_AMENITIES.map(({ name, icon: Icon }) => (
               <Button
-                key={amenity}
-                variant={selectedAmenities.includes(amenity) ? "default" : "outline"}
+                key={name}
+                variant={selectedAmenities.includes(name) ? "default" : "outline"}
                 size="sm"
                 onClick={() => {
                   setSelectedAmenities(
-                    selectedAmenities.includes(amenity)
-                      ? selectedAmenities.filter(a => a !== amenity)
-                      : [...selectedAmenities, amenity]
+                    selectedAmenities.includes(name)
+                      ? selectedAmenities.filter(a => a !== name)
+                      : [...selectedAmenities, name]
                   );
                 }}
+                className="flex items-center gap-2"
               >
-                {amenity}
+                <Icon className={`h-4 w-4 ${selectedAmenities.includes(name) ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                {name}
               </Button>
             ))}
           </div>
