@@ -25,8 +25,9 @@ export function useAdminData() {
       if (savedError) throw savedError;
       
       // Count occurrences of each property_id
-      const propertyCounts = savedData.reduce((acc, item) => {
-        acc[item.property_id] = (acc[item.property_id] || 0) + 1;
+      const propertyCounts: Record<string, number> = savedData.reduce((acc: Record<string, number>, item) => {
+        const propId = item.property_id.toString();
+        acc[propId] = (acc[propId] || 0) + 1;
         return acc;
       }, {});
       
@@ -34,9 +35,9 @@ export function useAdminData() {
       const sortedCounts = Object.entries(propertyCounts)
         .map(([property_id, count]) => ({ 
           property_id: parseInt(property_id), 
-          count 
+          count: count as number
         }))
-        .sort((a, b) => b.count - a.count);
+        .sort((a, b) => (b.count as number) - (a.count as number));
       
       // If we have properties to look up
       if (sortedCounts.length > 0) {
