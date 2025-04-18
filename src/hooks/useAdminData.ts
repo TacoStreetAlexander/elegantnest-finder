@@ -27,7 +27,7 @@ export function useAdminData() {
           ),
           count: property_id(count)
         `)
-        .groupby('property_id, "Senior Draft 3".name, "Senior Draft 3".city')
+        .group('property_id, "Senior Draft 3".name, "Senior Draft 3".city')
         .order('count', { ascending: false });
       
       if (error) throw error;
