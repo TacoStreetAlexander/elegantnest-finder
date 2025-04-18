@@ -13,6 +13,7 @@ import SavedApartments from "./pages/SavedApartments";
 import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +41,7 @@ const App = () => {
               <Route path="/saved" element={<SavedApartments />} />
               <Route path="/map" element={<MapView />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
