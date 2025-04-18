@@ -111,12 +111,20 @@ export const useMapMarkers = ({
     const currentIds = getPropertyIds(properties);
     const previousIds = getPropertyIds(propertiesRef.current);
     
+    // Check if the properties array has changed in any way
+    // This will trigger a re-render of markers when filters are applied
     const propertiesChanged = 
       properties.length !== propertiesRef.current.length || 
       JSON.stringify(currentIds) !== JSON.stringify(previousIds);
     
     if (propertiesChanged) {
-      propertiesRef.current = properties;
+      console.log('Properties changed, refreshing markers', {
+        prevCount: propertiesRef.current.length,
+        newCount: properties.length,
+        prevIds: previousIds.slice(0, 5),
+        newIds: currentIds.slice(0, 5)
+      });
+      propertiesRef.current = [...properties];
       setHasAddedMarkers(false);
     }
   }, [properties]);
