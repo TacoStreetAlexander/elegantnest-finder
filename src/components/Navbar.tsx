@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Map, Heart, Home, Info, HelpCircle, LogIn, LogOut, BookOpen } from 'lucide-react';
+import { Menu, X, Map, Heart } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthButtons } from './AuthButtons';
 
@@ -11,19 +10,18 @@ const Navbar = () => {
   const { isLoggedIn } = useAuth();
   
   const navLinks = [
-    { name: 'Home', path: '/', icon: <Home size={16} className="mr-1" /> },
-    { name: 'About', path: '/about', icon: <Info size={16} className="mr-1" /> },
-    { name: 'How It Works', path: '/how-it-works', icon: <HelpCircle size={16} className="mr-1" /> },
-    { name: 'Properties', path: '/properties', icon: <Home size={16} className="mr-1" /> },
-    { name: 'Map View', path: '/map', icon: <Map size={16} className="mr-1" /> },
-    { name: 'Blog', path: '/blog', icon: <BookOpen size={16} className="mr-1" /> }
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'How It Works', path: '/how-it-works' },
+    { name: 'Properties', path: '/properties' },
+    { name: 'Map View', path: '/map', icon: <Map size={16} className="ml-1" /> }
   ];
   
   if (isLoggedIn) {
     navLinks.push({ 
       name: 'Saved', 
       path: '/saved', 
-      icon: <Heart size={16} className="mr-1" fill="currentColor" /> 
+      icon: <Heart size={16} className="ml-1" fill="currentColor" /> 
     });
   }
   
@@ -52,8 +50,8 @@ const Navbar = () => {
                     : 'text-foreground/80 hover:text-primary py-1 border-b-2 border-transparent'
                 }`}
               >
-                {link.icon}
                 {link.name}
+                {link.icon}
               </Link>
             ))}
             <AuthButtons />
@@ -83,8 +81,8 @@ const Navbar = () => {
                     : 'text-foreground/80 hover:text-primary'
                 }`}
               >
-                {link.icon}
                 {link.name}
+                {link.icon}
               </Link>
             ))}
             <div className="pt-2 border-t border-border/40 mt-2">
