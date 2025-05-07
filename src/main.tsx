@@ -5,12 +5,11 @@ import App from './App.tsx';
 import './index.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-// Create a new QueryClient instance
+// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
       retry: 1,
     },
   },
