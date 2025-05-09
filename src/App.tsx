@@ -11,6 +11,8 @@ import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import SavedApartments from "./pages/SavedApartments";
 import MapView from "./pages/MapView";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -40,6 +42,8 @@ const App = () => {
               <Route path="/properties/:slug" element={<PropertyDetail />} />
               <Route path="/saved" element={<SavedApartments />} />
               <Route path="/map" element={<MapView />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />

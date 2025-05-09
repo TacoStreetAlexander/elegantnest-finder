@@ -14,6 +14,7 @@ const Navbar = () => {
     { name: 'About', path: '/about' },
     { name: 'How It Works', path: '/how-it-works' },
     { name: 'Properties', path: '/properties' },
+    { name: 'Blog', path: '/blog' },
     { name: 'Map View', path: '/map', icon: <Map size={16} className="ml-1" /> }
   ];
   
