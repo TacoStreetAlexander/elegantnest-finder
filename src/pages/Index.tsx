@@ -1,10 +1,10 @@
+
 import { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
 import FeaturedProperties from '../components/FeaturedProperties';
 import EmbeddedListings from '../components/EmbeddedListings';
-import CallToAction from '../components/CallToAction';
 import Footer from '../components/Footer';
 
 const Index = () => {
@@ -20,7 +20,6 @@ const Index = () => {
       <Features />
       <FeaturedProperties />
       <EmbeddedListings />
-      <CallToAction />
       <Footer />
     </div>
   );

@@ -1,12 +1,12 @@
 
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
     <footer className="bg-charcoal-dark text-white/80">
       <div className="container-custom py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
           {/* Column 1 - About */}
           <div>
             <Link to="/" className="inline-block mb-6">
@@ -55,16 +55,6 @@ const Footer = () => {
                   Senior Living Blog
                 </Link>
               </li>
-              <li>
-                <Link to="/testimonials" className="text-white/70 hover:text-gold transition-colors inline-block">
-                  Testimonials
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-white/70 hover:text-gold transition-colors inline-block">
-                  Contact Us
-                </Link>
-              </li>
             </ul>
           </div>
           
@@ -101,41 +91,6 @@ const Footer = () => {
                 <Link to="/all-locations" className="text-white/70 hover:text-gold transition-colors inline-block">
                   All Locations
                 </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Column 4 - Contact */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6">Contact Us</h3>
-            <ul className="space-y-4">
-              <li className="flex items-start">
-                <Phone className="w-5 h-5 text-gold mr-3 mt-0.5" />
-                <div>
-                  <p className="font-medium">Phone</p>
-                  <a href="tel:+18005551234" className="text-white/70 hover:text-gold transition-colors">
-                    (800) 555-1234
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start">
-                <Mail className="w-5 h-5 text-gold mr-3 mt-0.5" />
-                <div>
-                  <p className="font-medium">Email</p>
-                  <a href="mailto:info@elegantnest.com" className="text-white/70 hover:text-gold transition-colors">
-                    info@elegantnest.com
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start">
-                <MapPin className="w-5 h-5 text-gold mr-3 mt-0.5" />
-                <div>
-                  <p className="font-medium">Main Office</p>
-                  <address className="text-white/70 not-italic">
-                    123 Luxury Lane, Suite 400<br />
-                    Austin, TX 78701
-                  </address>
-                </div>
               </li>
             </ul>
           </div>
