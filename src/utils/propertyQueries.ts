@@ -30,28 +30,92 @@ export const fetchFeaturedProperties = async (): Promise<Property[]> => {
   }
 };
 
-export const fetchAllProperties = async (): Promise<Property[]> => {
+export const fetchAllProperties = async (
+  limit: number = 20,
+  page: number = 0,
+  filters: {
+    metroRegion?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    bedrooms?: number[];
+    amenities?: string[];
+  } = {}
+): Promise<Property[]> => {
   try {
-    const { data, error } = await supabase
+    // Start building the query
+    let query = supabase
       .from('Senior Draft 3' as any)
       .select('*');
     
+    // Apply filters if provided
+    if (filters.metroRegion && filters.metroRegion !== 'all-regions') {
+      query = query.eq('metro_region', filters.metroRegion);
+    }
+    
+    if (filters.minPrice !== undefined) {
+      query = query.gte('price_range_min', filters.minPrice);
+    }
+    
+    if (filters.maxPrice !== undefined) {
+      query = query.lte('price_range_max', filters.maxPrice);
+    }
+    
+    // Apply pagination
+    const offset = page * limit;
+    query = query.range(offset, offset + limit - 1);
+    
+    // Execute the query
+    const { data, error } = await query;
+    
     if (error) {
-      console.error('Error fetching all properties:', error);
+      console.error('Error fetching properties:', error);
       throw error;
     }
     
-    console.log('Fetched properties from Supabase:', data?.length);
+    console.log(`Fetched ${data?.length} properties from Supabase (page ${page}, limit ${limit})`);
     
     if (!data || data.length === 0) {
       console.warn('No data returned from Supabase query');
-      return getMockProperties();
+      return getMockProperties().slice(0, limit);
     }
     
-    return data.map(item => transformPropertyData(item));
+    // Transform the data
+    const properties = data.map(item => transformPropertyData(item));
+    
+    // Apply client-side filtering for complex filters that can't be done in the database
+    let filteredProperties = properties;
+    
+    // Filter by bedrooms if specified
+    if (filters.bedrooms && filters.bedrooms.length > 0) {
+      filteredProperties = filteredProperties.filter(property => {
+        return property.floorPlans.some(plan => {
+          // Check for studio (0 bedrooms)
+          if (filters.bedrooms.includes(0) && 
+              (plan.bedrooms === 0 || plan.name.toLowerCase().includes('studio'))) {
+            return true;
+          }
+          
+          // Check for specific bedroom counts
+          return filters.bedrooms.includes(plan.bedrooms);
+        });
+      });
+    }
+    
+    // Filter by amenities if specified
+    if (filters.amenities && filters.amenities.length > 0) {
+      filteredProperties = filteredProperties.filter(property => {
+        return filters.amenities!.every(amenity => 
+          property.amenities.some(a => 
+            a.toLowerCase().includes(amenity.toLowerCase())
+          )
+        );
+      });
+    }
+    
+    return filteredProperties;
   } catch (error) {
     console.error('Exception in fetchAllProperties:', error);
-    return getMockProperties();
+    return getMockProperties().slice(0, limit);
   }
 };
 

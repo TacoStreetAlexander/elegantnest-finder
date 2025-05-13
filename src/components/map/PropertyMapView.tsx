@@ -7,6 +7,7 @@ import MapLoadingIndicator from './MapLoadingIndicator';
 import MapErrorState from './MapErrorState';
 import MapLegend from './MapLegend';
 import PropertyMapMarkers from './PropertyMapMarkers';
+import MapLimitedNotice from './MapLimitedNotice';
 import './MapStyles.css'; // Import the map styles
 
 interface PropertyMapViewProps {
@@ -15,6 +16,7 @@ interface PropertyMapViewProps {
   onPropertySelect: (id: number) => void;
   isComponentMounted: boolean;
   isMobile: boolean;
+  totalProperties?: number;
 }
 
 // Use memo to prevent unnecessary re-renders
@@ -23,7 +25,8 @@ const PropertyMapView = memo(({
   selectedPropertyId, 
   onPropertySelect,
   isComponentMounted,
-  isMobile
+  isMobile,
+  totalProperties
 }: PropertyMapViewProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const [isMapLoading, setIsMapLoading] = useState(true);
@@ -110,6 +113,14 @@ const PropertyMapView = memo(({
       
       {(isInitializing || isMapLoading) && <MapLoadingIndicator overlay />}
       {!isMobile && mapLoaded && <MapLegend />}
+      
+      {/* Show limited notice when we're limiting the number of markers */}
+      {mapLoaded && properties.length > 0 && (
+        <MapLimitedNotice 
+          total={totalProperties || properties.length} 
+          shown={properties.length} 
+        />
+      )}
     </MapContainer>
   );
 });

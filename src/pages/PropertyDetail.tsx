@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
+import ResponsiveImage from '@/components/ResponsiveImage';
 
 const PropertyDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -138,10 +139,12 @@ const PropertyDetail = () => {
               {property.images.map((image, index) => (
                 <CarouselItem key={index}>
                   <div className="aspect-[16/9]">
-                    <img
+                    <ResponsiveImage
                       src={image}
                       alt={`${property.name} - Image ${index + 1}`}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full rounded-lg"
+                      objectFit="cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 80vw"
                     />
                   </div>
                 </CarouselItem>
@@ -264,10 +267,12 @@ const PropertyDetail = () => {
               {property.floorPlans.map((plan, index) => (
                 <Card key={index} className="overflow-hidden">
                   <div className="aspect-[4/3]">
-                    <img
+                    <ResponsiveImage
                       src={plan.image}
                       alt={plan.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full"
+                      objectFit="cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   </div>
                   <CardContent className="p-6">

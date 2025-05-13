@@ -1,5 +1,5 @@
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import { Property } from '../../types/property';
 import PropertyMapView from './PropertyMapView';
 import MapLoadingIndicator from './MapLoadingIndicator';
@@ -32,63 +32,32 @@ const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }
   // Get saved properties for the saved filter
   const { savedPropertyIds } = useSavedProperties();
   
-  // Apply filters to properties
-  const filteredProperties = useMemo(() => {
+  // Limit the number of markers shown on the map for performance
+  const MAX_MARKERS = 50;
+  
+  // State to track if we're showing limited markers
+  const [isLimited, setIsLimited] = useState(false);
+  
+  // Apply filters and limit the number of markers
+  const optimizedProperties = useMemo(() => {
+    // We don't need to apply filters here anymore since they're applied in the query
+    // Just limit the number of markers for performance
+    
+    // Apply saved only filter (this is still done client-side)
     let filtered = [...properties];
-    
-    // Apply metro region filter
-    if (metroRegion && metroRegion !== 'all-regions') {
-      filtered = filtered.filter(property => 
-        property.metroRegion?.toLowerCase() === metroRegion.toLowerCase());
-    }
-    
-    // Apply bedroom type filter
-    if (selectedBedrooms.length > 0) {
-      filtered = filtered.filter(property => {
-        // Check if property has any of the selected bedroom types
-        return selectedBedrooms.some(bedroomType => {
-          if (bedroomType === 'Studio') {
-            return property.floorPlans.some(plan => 
-              plan.name.toLowerCase().includes('studio') || 
-              (plan.bedrooms === 0));
-          } else {
-            const bedroomCount = parseInt(bedroomType);
-            return property.floorPlans.some(plan => plan.bedrooms === bedroomCount);
-          }
-        });
-      });
-    }
-    
-    // Apply price range filter
-    filtered = filtered.filter(property => {
-      const propertyMinPrice = property.priceRange.min;
-      return propertyMinPrice >= priceRange[0] && propertyMinPrice <= priceRange[1];
-    });
-    
-    // Apply amenities filter
-    if (selectedAmenities.length > 0) {
-      filtered = filtered.filter(property => 
-        selectedAmenities.every(amenity => 
-          property.amenities.some(a => a.toLowerCase().includes(amenity.toLowerCase()))
-        )
-      );
-    }
-    
-    // Apply saved only filter
     if (showSavedOnly) {
       filtered = filtered.filter(property => savedPropertyIds.includes(property.id));
     }
     
-    return filtered;
-  }, [
-    properties, 
-    metroRegion, 
-    selectedBedrooms, 
-    priceRange, 
-    selectedAmenities, 
-    showSavedOnly,
-    savedPropertyIds
-  ]);
+    // Check if we need to limit the markers
+    if (filtered.length > MAX_MARKERS) {
+      setIsLimited(true);
+      return filtered.slice(0, MAX_MARKERS);
+    } else {
+      setIsLimited(false);
+      return filtered;
+    }
+  }, [properties, showSavedOnly, savedPropertyIds]);
   
   // Set component as mounted immediately
   useEffect(() => {
@@ -110,23 +79,25 @@ const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }
       priceRange,
       selectedAmenities,
       showSavedOnly,
-      filteredCount: filteredProperties.length,
-      totalCount: properties.length
+      filteredCount: optimizedProperties.length,
+      totalCount: properties.length,
+      isLimited
     });
-  }, [metroRegion, selectedBedrooms, priceRange, selectedAmenities, showSavedOnly, filteredProperties.length, properties.length]);
+  }, [metroRegion, selectedBedrooms, priceRange, selectedAmenities, showSavedOnly, optimizedProperties.length, properties.length, isLimited]);
   
-  // Show empty state if no properties available after filtering
-  if (filteredProperties.length === 0) {
+  // Show empty state if no properties available
+  if (optimizedProperties.length === 0) {
     return <MapEmptyState />;
   }
   
   return (
     <PropertyMapView
-      properties={filteredProperties}
+      properties={optimizedProperties}
       selectedPropertyId={selectedPropertyId}
       onPropertySelect={onPropertySelect}
       isComponentMounted={isMountedRef.current}
       isMobile={isMobile}
+      totalProperties={properties.length}
     />
   );
 };

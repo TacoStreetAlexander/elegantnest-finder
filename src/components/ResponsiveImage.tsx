@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { getWebPUrl, generateSrcSet, getResponsiveSizes, getPlaceholderImage } from '@/utils/imageOptimization';
 
 export interface ResponsiveImageProps {
   src: string;
@@ -38,32 +39,17 @@ const ResponsiveImage = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(false);
 
-  // Create WebP version URL if the image isn't already WebP
-  const getOptimizedSrc = (originalSrc: string): string => {
-    // If the image is already a WebP or from an external service that does optimization,
-    // don't attempt to change it
-    if (originalSrc.includes('.webp') || 
-        originalSrc.includes('unsplash.com') || 
-        originalSrc.includes('cloudinary.com') || 
-        originalSrc.includes('imgix')) {
-      return originalSrc;
-    }
-
-    // For other images, check if we can potentially serve WebP format
-    // This is a simplified approach - in a production app, you might want to 
-    // check browser support or use a CDN that does this automatically
-    const supportsWebP = true; // Assume modern browser
-    
-    if (supportsWebP) {
-      // For local images, we could modify the path
-      return originalSrc;
-    }
-
-    return originalSrc;
-  };
-
-  // Get appropriate source URL
-  const imageSrc = getOptimizedSrc(src);
+  // Get WebP version of the image
+  const imageSrc = getWebPUrl(src);
+  
+  // Generate srcset for responsive images
+  const srcSet = generateSrcSet(src);
+  
+  // Get appropriate sizes attribute
+  const sizesAttr = sizes || getResponsiveSizes();
+  
+  // Get placeholder for blur-up effect
+  const placeholder = getPlaceholderImage();
   
   // Handle image load event
   const handleImageLoad = () => {
@@ -105,10 +91,14 @@ const ResponsiveImage = ({
       {/* Main image with lazy loading */}
       <img
         src={imageSrc}
+        srcSet={srcSet || undefined}
+        sizes={sizesAttr}
         alt={alt}
         width={width}
         height={height}
         loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
         className={cn(
           "transition-opacity duration-300",
           isLoaded ? "opacity-100" : "opacity-0",
