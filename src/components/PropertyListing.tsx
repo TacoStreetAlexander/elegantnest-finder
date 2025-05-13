@@ -3,6 +3,7 @@ import { MapPin, Star, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Property } from '../types/property';
 import SaveButton from './SaveButton';
+import ResponsiveImage from './ResponsiveImage';
 
 interface PropertyListingProps {
   property: Property;
@@ -54,10 +55,12 @@ const PropertyListing = ({ property }: PropertyListingProps) => {
     <div className="rounded-xl overflow-hidden border border-border bg-white shadow-sm hover-lift">
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
-        <img 
+        <ResponsiveImage 
           src={property.images[0]} 
           alt={property.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full"
+          objectFit="cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         {property.featured && (
           <div className="absolute top-3 left-3 bg-gold px-2 py-1 rounded text-xs font-medium text-white">

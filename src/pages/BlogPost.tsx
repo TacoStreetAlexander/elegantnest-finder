@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon, ChevronLeft, User2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import ResponsiveImage from '@/components/ResponsiveImage';
 
 // Import a markdown parser library (you may need to install this)
 // For example: npm install react-markdown
@@ -112,10 +114,12 @@ const BlogPost = () => {
             </div>
             
             <div className="aspect-[2/1] w-full overflow-hidden rounded-lg mb-8">
-              <img 
+              <ResponsiveImage 
                 src={post.coverImage} 
                 alt={post.title} 
-                className="w-full h-full object-cover"
+                className="w-full h-full"
+                objectFit="cover"
+                sizes="(max-width: 768px) 100vw, 800px"
               />
             </div>
           </header>
@@ -151,10 +155,12 @@ const BlogPost = () => {
                   <Link to={`/blog/${relatedPost.slug}`} key={relatedPost.id} className="group">
                     <Card className="h-full overflow-hidden transition-all hover:shadow-md">
                       <div className="aspect-video relative overflow-hidden">
-                        <img 
+                        <ResponsiveImage 
                           src={relatedPost.coverImage} 
                           alt={relatedPost.title} 
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500"
+                          className="w-full h-full"
+                          objectFit="cover"
+                          sizes="(max-width: 768px) 33vw, 300px"
                         />
                       </div>
                       <CardContent className="p-4">

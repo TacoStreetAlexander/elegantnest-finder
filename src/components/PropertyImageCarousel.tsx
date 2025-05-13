@@ -1,5 +1,6 @@
 
 import { Property } from '../types/property';
+import ResponsiveImage from './ResponsiveImage';
 
 interface PropertyImageCarouselProps {
   properties: Property[];
@@ -18,10 +19,13 @@ const PropertyImageCarousel = ({ properties, activeIndex, setActiveIndex }: Prop
             ${index === activeIndex ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 -translate-x-8 z-0'}
           `}
         >
-          <img 
+          <ResponsiveImage 
             src={property.images[0]} 
-            alt={property.name} 
-            className="w-full h-[400px] md:h-[500px] object-cover"
+            alt={property.name}
+            className="w-full h-[400px] md:h-[500px]" 
+            objectFit="cover"
+            sizes="(max-width: 768px) 100vw, 800px"
+            priority={index === activeIndex}
           />
         </div>
       ))}

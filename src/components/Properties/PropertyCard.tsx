@@ -4,6 +4,7 @@ import { Property } from '@/types/property';
 import { Card, CardContent } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import SaveButton from '@/components/SaveButton';
+import ResponsiveImage from '@/components/ResponsiveImage';
 
 interface PropertyCardProps {
   property: Property;
@@ -55,10 +56,12 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     <Link to={propertyLink}>
       <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg h-full">
         <div className="aspect-video relative overflow-hidden">
-          <img 
+          <ResponsiveImage 
             src={property.images[0]} 
             alt={property.name} 
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            className="w-full h-full"
+            objectFit="cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
           {property.featured && (
             <div className="absolute top-3 left-3 bg-gold text-white text-xs px-3 py-1 rounded">

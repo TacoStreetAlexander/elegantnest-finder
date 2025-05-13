@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Property } from '@/types/property';
 import { MapPin, Star } from 'lucide-react';
+import ResponsiveImage from '../ResponsiveImage';
 
 interface PropertyDetailDialogProps {
   property: Property;

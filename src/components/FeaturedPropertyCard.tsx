@@ -3,6 +3,7 @@ import { Star, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Property } from '../types/property';
 import SaveButton from './SaveButton';
+import ResponsiveImage from './ResponsiveImage';
 
 interface FeaturedPropertyCardProps {
   property: Property;

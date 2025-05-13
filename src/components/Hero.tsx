@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import ResponsiveImage from './ResponsiveImage';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -14,10 +15,13 @@ const Hero = () => {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 to-charcoal/60 z-10"></div>
-        <img
+        <ResponsiveImage
           src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
           alt="Elegant senior living space with comfortable furniture"
-          className="w-full h-full object-cover"
+          className="w-full h-full"
+          objectFit="cover"
+          priority={true}
+          sizes="100vw"
         />
       </div>
 

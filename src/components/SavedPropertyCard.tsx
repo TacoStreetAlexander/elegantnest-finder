@@ -1,9 +1,9 @@
 
 import { Link } from 'react-router-dom';
 import { Property } from '@/types/property';
-import { Card, CardContent } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import UnsaveButton from '@/components/UnsaveButton';
+import ResponsiveImage from '@/components/ResponsiveImage';
 
 interface SavedPropertyCardProps {
   property: Property;
@@ -57,10 +57,12 @@ const SavedPropertyCard = ({ property, onUnsave }: SavedPropertyCardProps) => {
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <Link to={propertyLink}>
-          <img 
+          <ResponsiveImage 
             src={property.images[0]} 
             alt={property.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
+            objectFit="cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
           {property.featured && (
             <div className="absolute top-3 left-3 bg-gold px-2 py-1 rounded text-xs font-medium text-white">

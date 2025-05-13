@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Property } from '../types/property';
 import { Button } from './ui/button';
 import SaveButton from './SaveButton';
+import ResponsiveImage from './ResponsiveImage';
 import {
   Tooltip,
   TooltipContent,
