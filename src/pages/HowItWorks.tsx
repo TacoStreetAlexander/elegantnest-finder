@@ -204,38 +204,6 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      {/* Testimonial Section */}
-      <section className="py-16 md:py-24">
-        <div className="container-custom">
-          <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="grid md:grid-cols-2">
-              <div className="bg-gold/10 p-10 md:p-12 flex items-center">
-                <div>
-                  <h3 className="text-2xl font-serif font-semibold mb-6">Our Client Success Stories</h3>
-                  <div className="mb-8">
-                    <p className="italic text-charcoal/80 mb-4">
-                      "The team at ElegantNest made finding the perfect senior community for my mother so much easier than I expected. Their personal approach and attention to detail truly set them apart."
-                    </p>
-                    <p className="font-medium">— Jennifer K., Dallas</p>
-                  </div>
-                  <a href="/testimonials" className="text-gold font-medium flex items-center hover:underline">
-                    Read more success stories
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </a>
-                </div>
-              </div>
-              <div>
-                <img 
-                  src="https://images.unsplash.com/photo-1586539252580-326165f9a5e4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" 
-                  alt="Happy senior resident in their new apartment" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-16 md:py-24 bg-gradient-to-r from-gold/10 to-cream-light">
         <div className="container-custom text-center">
