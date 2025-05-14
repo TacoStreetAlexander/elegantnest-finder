@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '../types/property';
 import { transformPropertyData } from './propertyTransform';
-import { getMockProperties } from './mockProperties';
 
 export const fetchFeaturedProperties = async (): Promise<Property[]> => {
   try {
@@ -19,14 +18,14 @@ export const fetchFeaturedProperties = async (): Promise<Property[]> => {
     console.log('Raw Supabase data:', data);
     
     if (!data || data.length === 0) {
-      console.warn('No featured properties found');
-      return getMockProperties().slice(0, 3);
+      console.error('No Supabase data returned for featured properties');
+      return [];
     }
     
     return data.map(item => transformPropertyData(item));
   } catch (error) {
     console.error('Exception in fetchFeaturedProperties:', error);
-    return getMockProperties().slice(0, 3);
+    return [];
   }
 };
 
@@ -49,15 +48,15 @@ export const fetchAllProperties = async (
     
     // Apply filters if provided
     if (filters.metroRegion && filters.metroRegion !== 'all-regions') {
-      query = query.eq('metro_region', filters.metroRegion);
+      query = query.eq('metroregion', filters.metroRegion);
     }
     
     if (filters.minPrice !== undefined) {
-      query = query.gte('price_range_min', filters.minPrice);
+      query = query.gte('1brstart', filters.minPrice.toString());
     }
     
     if (filters.maxPrice !== undefined) {
-      query = query.lte('price_range_max', filters.maxPrice);
+      query = query.lte('2brstart', filters.maxPrice.toString());
     }
     
     // Apply pagination
@@ -75,8 +74,12 @@ export const fetchAllProperties = async (
     console.log(`Fetched ${data?.length} properties from Supabase (page ${page}, limit ${limit})`);
     
     if (!data || data.length === 0) {
-      console.warn('No data returned from Supabase query');
-      return getMockProperties().slice(0, limit);
+      console.error('No Supabase data returned from query', {
+        filters,
+        page,
+        limit
+      });
+      return [];
     }
     
     // Transform the data
@@ -115,7 +118,7 @@ export const fetchAllProperties = async (
     return filteredProperties;
   } catch (error) {
     console.error('Exception in fetchAllProperties:', error);
-    return getMockProperties().slice(0, limit);
+    return [];
   }
 };
 
@@ -138,7 +141,7 @@ export const fetchPropertyBySlug = async (slug: string): Promise<Property | null
     }
     
     if (!data) {
-      console.warn(`No property found with slug: ${slug}`);
+      console.error(`No Supabase data returned for property with slug: ${slug}`);
       return null;
     }
     
