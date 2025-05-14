@@ -80,7 +80,7 @@ const MapView = () => {
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
         
-        <div className="container-custom py-6">
+        <div className="mx-auto max-w-[1600px] px-8 py-6 w-full container">
           <MapViewHeader 
             metroRegions={metroRegions}
             selectedRegion={selectedRegion}
@@ -90,17 +90,17 @@ const MapView = () => {
             propertiesCount={filteredProperties.length}
           />
           
-          <div className="mt-6">
-            <PropertyFilters 
-              properties={filteredProperties}
-              showMobileToggle={true}
-              onToggleMobileFilters={toggleMap}
-              isMobileFiltersOpen={!showMap}
-            />
-          </div>
-          
           {isMobile ? (
-            <Tabs defaultValue="list" className="w-full">
+            <>
+              <div>
+                <PropertyFilters 
+                  properties={filteredProperties}
+                  showMobileToggle={true}
+                  onToggleMobileFilters={toggleMap}
+                  isMobileFiltersOpen={!showMap}
+                />
+              </div>
+              <Tabs defaultValue="list" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="list">📋 List View</TabsTrigger>
                 <TabsTrigger value="map">🔍 Map View</TabsTrigger>
@@ -126,10 +126,20 @@ const MapView = () => {
                   />
                 </div>
               </TabsContent>
-            </Tabs>
+              </Tabs>
+            </>
           ) : (
-            <div className="flex h-[calc(100vh-16rem)] gap-6">
-              <div className="w-[30%] overflow-hidden">
+            <div className="grid grid-cols-[250px_minmax(300px,_1fr)_600px] h-[calc(100vh-16rem)] gap-6 mt-6">
+              <div className="overflow-auto bg-background border rounded-lg p-4 w-[250px]">
+                <h3 className="text-sm font-medium mb-4">Filters</h3>
+                <PropertyFilters 
+                  properties={filteredProperties}
+                  showMobileToggle={false}
+                  isMobileFiltersOpen={true}
+                />
+              </div>
+              
+              <div className="overflow-auto bg-background border rounded-lg p-4 min-w-0">
                 <PropertyListSection
                   listingRef={listingRef}
                   filteredProperties={filteredProperties}
@@ -140,7 +150,7 @@ const MapView = () => {
                 />
               </div>
               
-              <div className="w-[70%] h-full">
+              <div className="h-full bg-background border rounded-lg w-[600px]">
                 <PropertyMap 
                   properties={filteredProperties} 
                   selectedPropertyId={selectedProperty}
