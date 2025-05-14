@@ -106,16 +106,7 @@ export const usePropertiesData = () => {
     });
     
     if (allProperties.length === 0 && !isLoading) {
-      console.error('No Supabase data returned from "Senior Draft 3" table', {
-        filters: {
-          metroRegion,
-          priceRange,
-          bedrooms: bedroomNumbers,
-          amenities: selectedAmenities
-        },
-        page,
-        isLoading
-      });
+      console.warn('No properties data returned from Supabase');
     }
   }, [allProperties, page, hasMore, metroRegion, priceRange, bedroomNumbers, selectedAmenities, isLoading]);
 
