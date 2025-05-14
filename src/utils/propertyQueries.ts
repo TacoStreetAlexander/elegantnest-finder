@@ -19,6 +19,7 @@ export const fetchFeaturedProperties = async (): Promise<Property[]> => {
     
     if (!data || data.length === 0) {
       console.error('No Supabase data returned for featured properties');
+      console.log('Supabase returned empty array []');
       return [];
     }
     
@@ -79,6 +80,7 @@ export const fetchAllProperties = async (
         page,
         limit
       });
+      console.log('Supabase returned empty array []');
       return [];
     }
     

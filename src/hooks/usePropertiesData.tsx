@@ -116,6 +116,7 @@ export const usePropertiesData = () => {
         page,
         isLoading
       });
+      console.log('Supabase returned empty array [] for "Senior Draft 3" table');
     }
   }, [allProperties, page, hasMore, metroRegion, priceRange, bedroomNumbers, selectedAmenities, isLoading]);
 

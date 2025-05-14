@@ -16,30 +16,77 @@ ElegantNest Finder aims to simplify the process of finding senior living communi
 
 The project is built using modern web technologies:
 
-- **Frontend Framework**: React with TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS with Shadcn UI components
-- **State Management**: React Query
-- **Database**: Supabase
-- **Maps Integration**: Mapbox GL
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite 5
+- **Styling**: Tailwind CSS 3 with Shadcn UI components
+- **State Management**:
+  - React Query (TanStack Query v5) for server state
+  - Zustand v5 for client state
+- **Database & Backend**: Supabase
+- **Maps Integration**: Mapbox GL JS v3
 - **Form Handling**: React Hook Form with Zod validation
-- **Routing**: React Router DOM
-- **UI Components**: Radix UI primitives with custom styling
+- **Routing**: React Router DOM v6
+- **UI Components**:
+  - Radix UI primitives
+  - Embla Carousel for image carousels
+  - Sonner for toast notifications
+  - Recharts for data visualization
+- **Performance Optimization**:
+  - Resource preconnect
+  - Dynamic loading
+  - React.memo for component optimization
 
 ## 📁 Project Structure
 
 ```
 src/
-├── components/     # Reusable UI components
-├── pages/         # Page components and routes
-├── lib/           # Utility functions and configurations
-├── hooks/         # Custom React hooks
-├── types/         # TypeScript type definitions
-├── utils/         # Helper functions
-├── integrations/  # Third-party service integrations
-├── data/          # Static data and constants
-├── App.tsx        # Main application component
-└── main.tsx       # Application entry point
+├── components/           # Reusable UI components
+│   ├── map/             # Map-related components
+│   ├── MapView/         # Map view specific components
+│   ├── Properties/      # Property listing components
+│   ├── PropertyFilters/ # Property filtering components
+│   ├── SavedProperties/ # Saved properties components
+│   └── ui/              # Shadcn UI components
+├── pages/               # Page components and routes
+│   ├── Index.tsx        # Home page
+│   ├── MapView.tsx      # Interactive map view
+│   ├── Properties.tsx   # Property listings
+│   ├── PropertyDetail.tsx # Single property view
+│   ├── SavedApartments.tsx # Saved properties
+│   ├── Blog.tsx         # Blog page
+│   ├── BlogPost.tsx     # Individual blog post
+│   ├── AboutUs.tsx      # About page
+│   ├── HowItWorks.tsx   # How it works page
+│   ├── Auth.tsx         # Authentication page
+│   ├── Admin.tsx        # Admin dashboard
+│   └── NotFound.tsx     # 404 page
+├── hooks/               # Custom React hooks
+│   ├── map/             # Map-related hooks
+│   ├── useAuth.ts       # Authentication hook
+│   ├── usePropertiesData.tsx # Property data fetching
+│   ├── useSavedProperties.ts # Saved properties management
+│   ├── usePropertyFilters.tsx # Property filtering logic
+│   └── useBlogPosts.ts  # Blog data fetching
+├── types/               # TypeScript type definitions
+│   ├── property.ts      # Property interfaces
+│   └── map.ts           # Map-related types
+├── utils/               # Helper functions
+│   ├── map/             # Map utility functions
+│   ├── propertyQueries.ts # Supabase query functions
+│   ├── propertyTransform.ts # Data transformation
+│   └── performanceOptimization.ts # Performance helpers
+├── integrations/        # Third-party service integrations
+│   └── supabase/        # Supabase client and types
+├── data/                # Static data and constants
+│   ├── propertyData.ts  # Property fallback data
+│   └── blogData.ts      # Blog post data
+├── styles/              # Global styles
+│   └── blog.css         # Blog-specific styles
+├── lib/                 # Utility functions and configurations
+│   └── utils.ts         # Common utility functions
+├── App.tsx              # Main application component
+├── main.tsx             # Application entry point
+└── index.css            # Global CSS
 ```
 
 ## 🚀 Getting Started
@@ -54,6 +101,10 @@ src/
    ```bash
    npm install
    ```
+   or with bun:
+   ```bash
+   bun install
+   ```
 
 3. **Set up environment variables**
    Create a `.env` file in the root directory with the following variables:
@@ -63,24 +114,47 @@ src/
    VITE_MAPBOX_TOKEN=your_mapbox_token
    ```
 
+   Note: The repository currently has hardcoded Supabase URL and key in `src/integrations/supabase/client.ts` for development purposes. In a production environment, you should use environment variables instead.
+
 4. **Start the development server**
    ```bash
    npm run dev
    ```
 
-5. **Build for production**
+5. **Additional scripts**
    ```bash
+   # Build for production
    npm run build
+   
+   # Build for development
+   npm run build:dev
+   
+   # Run linting
+   npm run lint
+   
+   # Preview production build
+   npm run preview
    ```
 
 ## 🎯 Features
 
-- **Advanced Search**: Filter communities by location, amenities, care levels, and more
+- **Advanced Search**: Filter communities by metro region, price range, amenities, bedrooms, and more
 - **Interactive Maps**: Visualize community locations with Mapbox integration
-- **Detailed Profiles**: Comprehensive information about each community
-- **User Reviews**: Read and write reviews about communities
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Accessibility**: Built with accessibility in mind for all users
+  - Custom markers and popups
+  - Property clusters for high-density areas
+  - Mobile-optimized map views with tabs
+- **Detailed Profiles**: Comprehensive information about each senior housing option including:
+  - Pricing information
+  - Floor plans
+  - Amenities and features
+  - Contact information
+  - Image galleries
+- **Saved Properties**: Users can save their favorite properties to revisit later
+- **Authentication**: User accounts with Supabase Auth
+- **Blog Section**: Articles and resources for seniors and their families
+- **Responsive Design**: Different layouts optimized for desktop and mobile
+- **Performance Optimization**: Resource preconnect and loading monitoring
+- **Admin Dashboard**: Property management for administrators
 
 ## 🤝 Contributing
 
