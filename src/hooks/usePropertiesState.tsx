@@ -23,10 +23,19 @@ export const usePropertiesState = () => {
   const selectedAmenities = searchParams.get('amenities')?.split(',').filter(Boolean) || [];
   const bedroomsFilter = searchParams.get('bedrooms') || '';
   
+  // Create filters object for query
+  const filters = {
+    metroRegion: regionFilter || undefined,
+    minPrice: minPrice || undefined,
+    maxPrice: maxPrice || undefined,
+    amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+    bedrooms: bedroomsFilter ? [parseInt(bedroomsFilter)] : undefined
+  };
+  
   // Fetch properties from Supabase using our updated query function
   const { data: supabaseProperties, isLoading, error } = useQuery({
-    queryKey: ['properties'],
-    queryFn: fetchAllProperties,
+    queryKey: ['properties', filters],
+    queryFn: () => fetchAllProperties(20, 0, filters),
     meta: {
       onError: (err: Error) => {
         console.error('Error fetching properties:', err);
