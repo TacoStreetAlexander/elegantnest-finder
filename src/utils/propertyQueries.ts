@@ -47,7 +47,7 @@ export const fetchAllProperties = async (
       .from('Senior Draft 3' as any)
       .select('*');
     
-    // Apply filters if provided
+    // Only apply database filters for fields that are actually specified
     if (filters.metroRegion && filters.metroRegion !== 'all-regions') {
       query = query.eq('metroregion', filters.metroRegion);
     }
@@ -90,23 +90,23 @@ export const fetchAllProperties = async (
     // Apply client-side filtering for complex filters that can't be done in the database
     let filteredProperties = properties;
     
-    // Filter by bedrooms if specified
+    // Only apply bedrooms filter if specified
     if (filters.bedrooms && filters.bedrooms.length > 0) {
       filteredProperties = filteredProperties.filter(property => {
         return property.floorPlans.some(plan => {
           // Check for studio (0 bedrooms)
-          if (filters.bedrooms.includes(0) && 
+          if (filters.bedrooms?.includes(0) && 
               (plan.bedrooms === 0 || plan.name.toLowerCase().includes('studio'))) {
             return true;
           }
           
           // Check for specific bedroom counts
-          return filters.bedrooms.includes(plan.bedrooms);
+          return filters.bedrooms?.includes(plan.bedrooms) || false;
         });
       });
     }
     
-    // Filter by amenities if specified
+    // Only apply amenities filter if specified 
     if (filters.amenities && filters.amenities.length > 0) {
       filteredProperties = filteredProperties.filter(property => {
         return filters.amenities!.every(amenity => 

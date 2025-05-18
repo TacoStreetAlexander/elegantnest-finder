@@ -16,26 +16,35 @@ export const usePropertiesState = () => {
   const currentPage = parseInt(searchParams.get('page') || '1');
   const propertiesPerPage = 6;
   
-  // Extract filter parameters
+  // Extract filter parameters - but make them truly optional
   const regionFilter = searchParams.get('region') || '';
   const minPrice = searchParams.get('minPrice') ? parseInt(searchParams.get('minPrice') || '0') : 0;
   const maxPrice = searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice') || '10000') : 10000;
   const selectedAmenities = searchParams.get('amenities')?.split(',').filter(Boolean) || [];
   const bedroomsFilter = searchParams.get('bedrooms') || '';
   
-  // Create filters object for query
+  // Create filters object for query - only include filters that are actually set
   const filters = {
-    metroRegion: regionFilter || undefined,
-    minPrice: minPrice || undefined,
-    maxPrice: maxPrice || undefined,
+    // Only include metroRegion if it's specified and not 'all-regions'
+    metroRegion: regionFilter && regionFilter !== 'all-regions' ? regionFilter : undefined,
+    // Only include price filters if they're different from the defaults
+    minPrice: minPrice > 0 ? minPrice : undefined,
+    maxPrice: maxPrice < 10000 ? maxPrice : undefined,
+    // Only include amenities if there are any selected
     amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+    // Only include bedrooms if it's specified
     bedrooms: bedroomsFilter ? [parseInt(bedroomsFilter)] : undefined
   };
   
   // Fetch properties from Supabase using our updated query function
+  // Pass a custom queryFn that wraps fetchAllProperties to handle the context parameter
   const { data: supabaseProperties, isLoading, error } = useQuery({
     queryKey: ['properties', filters],
-    queryFn: () => fetchAllProperties(20, 0, filters),
+    queryFn: async ({ queryKey }) => {
+      // The second element of queryKey contains our filters
+      const filtersParam = queryKey[1] as typeof filters;
+      return fetchAllProperties(20, 0, filtersParam);
+    },
     meta: {
       onError: (err: Error) => {
         console.error('Error fetching properties:', err);
@@ -52,21 +61,24 @@ export const usePropertiesState = () => {
   const filterProperties = useCallback(() => {
     if (!supabaseProperties) return [];
     
+    // By default, show all properties
     let filtered = [...supabaseProperties];
     
-    // Apply region filter (using metroRegion instead of city)
-    if (regionFilter) {
+    // Only apply region filter if actually specified
+    if (regionFilter && regionFilter !== 'all-regions') {
       filtered = filtered.filter(property => 
         property.metroRegion?.toLowerCase() === regionFilter.toLowerCase());
     }
     
-    // Apply price filter
-    filtered = filtered.filter(property => {
-      const propertyPrice = property.priceRange.min;
-      return propertyPrice >= minPrice && propertyPrice <= maxPrice;
-    });
+    // Only apply price filter if different from defaults
+    if (minPrice > 0 || maxPrice < 10000) {
+      filtered = filtered.filter(property => {
+        const propertyPrice = property.priceRange.min;
+        return propertyPrice >= minPrice && propertyPrice <= maxPrice;
+      });
+    }
     
-    // Apply amenities filter
+    // Only apply amenities filter if amenities are selected
     if (selectedAmenities.length > 0) {
       filtered = filtered.filter(property => 
         selectedAmenities.every(amenity => 
@@ -75,7 +87,7 @@ export const usePropertiesState = () => {
       );
     }
     
-    // Apply bedrooms filter
+    // Only apply bedrooms filter if actually specified
     if (bedroomsFilter) {
       filtered = filtered.filter(property => 
         property.bedrooms.toString() === bedroomsFilter);

@@ -39,17 +39,22 @@ export const usePropertiesData = () => {
   // Get properties data from Supabase with pagination and filters
   const { data: paginatedProperties, isLoading, error } = useQuery({
     queryKey: queryKey,
-    queryFn: () => fetchAllProperties(
-      ITEMS_PER_PAGE, 
-      page,
-      {
-        metroRegion,
-        minPrice: priceRange[0],
-        maxPrice: priceRange[1],
+    queryFn: async ({ queryKey }) => {
+      // Only include filters that are actually selected by the user
+      const filtersParam = {
+        // Only include metroRegion if it's not the default
+        metroRegion: metroRegion !== 'all-regions' ? metroRegion : undefined,
+        // Only include price filters if they're different from the defaults
+        minPrice: priceRange[0] > 0 ? priceRange[0] : undefined,
+        maxPrice: priceRange[1] < 10000 ? priceRange[1] : undefined,
+        // Only include bedrooms if there are any selected
         bedrooms: bedroomNumbers.length > 0 ? bedroomNumbers : undefined,
+        // Only include amenities if there are any selected
         amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined
-      }
-    ),
+      };
+      
+      return fetchAllProperties(ITEMS_PER_PAGE, page, filtersParam);
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
     meta: {
       onError: (err: Error) => {
@@ -106,17 +111,7 @@ export const usePropertiesData = () => {
     });
     
     if (allProperties.length === 0 && !isLoading) {
-      console.error('No Supabase data returned from "Senior Draft 3" table', {
-        filters: {
-          metroRegion,
-          priceRange,
-          bedrooms: bedroomNumbers,
-          amenities: selectedAmenities
-        },
-        page,
-        isLoading
-      });
-      console.log('Supabase returned empty array [] for "Senior Draft 3" table');
+      console.log('No properties returned. This could be because no properties match the filters, or there was an error fetching data.');
     }
   }, [allProperties, page, hasMore, metroRegion, priceRange, bedroomNumbers, selectedAmenities, isLoading]);
 

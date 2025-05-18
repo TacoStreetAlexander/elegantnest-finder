@@ -14,7 +14,7 @@ export const useRegionSelection = (properties: Property[]) => {
     return regions.sort();
   }, [properties]);
   
-  // Filter properties based on selected region
+  // Filter properties based on selected region - only if a region is explicitly selected
   const filteredProperties = useMemo(() => {
     if (!properties || properties.length === 0) return [];
     if (!selectedRegion || selectedRegion === 'all-regions') return properties;

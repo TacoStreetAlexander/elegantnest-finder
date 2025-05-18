@@ -7,15 +7,16 @@ export const filterProperties = (
   selectedAmenities: string[],
   selectedBedrooms: string[]
 ): Property[] => {
+  // Start with all properties
   let result = [...properties];
   
-  // Apply city filter
+  // Apply city filter only if a city is selected
   if (cityFilter) {
     result = result.filter(property => 
       property.city.toLowerCase() === cityFilter.toLowerCase());
   }
   
-  // Apply amenities filter
+  // Apply amenities filter only if amenities are selected
   if (selectedAmenities.length > 0) {
     result = result.filter(property => 
       selectedAmenities.every(amenity => 
@@ -26,7 +27,7 @@ export const filterProperties = (
     );
   }
   
-  // Apply bedroom filter
+  // Apply bedroom filter only if bedrooms are selected
   if (selectedBedrooms.length > 0) {
     result = result.filter(property => {
       const hasStudio = selectedBedrooms.includes('Studio') && 
