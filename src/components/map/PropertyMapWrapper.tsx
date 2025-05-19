@@ -19,6 +19,7 @@ const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }
   // Use a ref instead of state to prevent re-renders
   const isMountedRef = useRef(false);
   const isMobile = useIsMobile();
+  const lastSelectedPropertyRef = useRef<number | null>(null);
   
   // Get current filters
   const {
@@ -37,6 +38,21 @@ const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }
   
   // State to track if we're showing limited markers
   const [isLimited, setIsLimited] = useState(false);
+  
+  // Memoize the property selection handler to prevent unnecessary re-renders
+  const handlePropertySelect = useMemo(() => {
+    return (id: number) => {
+      // Skip if the selection hasn't changed
+      if (id === lastSelectedPropertyRef.current) {
+        console.log('Property selection unchanged, skipping update');
+        return;
+      }
+      
+      console.log('Selecting property from map:', id);
+      lastSelectedPropertyRef.current = id;
+      onPropertySelect(id);
+    };
+  }, [onPropertySelect]);
   
   // Apply filters and limit the number of markers
   const optimizedProperties = useMemo(() => {
@@ -71,6 +87,11 @@ const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }
     };
   }, []);
   
+  // Update last selected property ref when selectedPropertyId changes
+  useEffect(() => {
+    lastSelectedPropertyRef.current = selectedPropertyId;
+  }, [selectedPropertyId]);
+  
   // Log filter changes for debugging
   useEffect(() => {
     console.log('Map filters applied:', {
@@ -94,7 +115,7 @@ const PropertyMapWrapper = ({ properties, selectedPropertyId, onPropertySelect }
     <PropertyMapView
       properties={optimizedProperties}
       selectedPropertyId={selectedPropertyId}
-      onPropertySelect={onPropertySelect}
+      onPropertySelect={handlePropertySelect}
       isComponentMounted={isMountedRef.current}
       isMobile={isMobile}
       totalProperties={properties.length}

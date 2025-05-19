@@ -1,5 +1,5 @@
 
-import { useEffect, memo, useState } from 'react';
+import { useEffect, memo, useState, useCallback } from 'react';
 import { useMapMarkers } from '../../hooks/map';
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
@@ -22,18 +22,21 @@ const PropertyMapMarkers = memo(({
 }: PropertyMapMarkersProps) => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   
+  // Memoize the property select handler to prevent recreating on each render
+  const handlePropertySelect = useCallback((id: number) => {
+    const property = properties.find(p => p.id === id);
+    if (property) {
+      setSelectedProperty(property);
+    }
+    onPropertySelect(id);
+  }, [properties, onPropertySelect]);
+  
   // Use our custom hook to manage markers
   const { hasAddedMarkers } = useMapMarkers({
     map,
     properties,
     selectedPropertyId,
-    onPropertySelect: (id: number) => {
-      const property = properties.find(p => p.id === id);
-      if (property) {
-        setSelectedProperty(property);
-      }
-      onPropertySelect(id);
-    },
+    onPropertySelect: handlePropertySelect,
     isMobile
   });
   
@@ -43,7 +46,7 @@ const PropertyMapMarkers = memo(({
   }, [hasAddedMarkers]);
   
   // When dialog closes, ensure markers stay in proper position
-  const handleDialogClose = () => {
+  const handleDialogClose = useCallback(() => {
     setSelectedProperty(null);
     
     // Resize map to ensure markers stay in proper position
@@ -52,7 +55,7 @@ const PropertyMapMarkers = memo(({
         map.resize();
       }
     }, 100);
-  };
+  }, [map]);
   
   // Add enhanced style element to ensure markers and popups interact properly
   useEffect(() => {

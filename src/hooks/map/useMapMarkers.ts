@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Property } from '../../types/property';
@@ -35,6 +34,7 @@ export const useMapMarkers = ({
   const [hasAddedMarkers, setHasAddedMarkers] = useState(false);
   const mapLoadListenerRef = useRef<((e: mapboxgl.MapboxEvent) => void) | null>(null);
   const propertiesRef = useRef<Property[]>([]);
+  const userTriggeredSelectionRef = useRef<boolean>(false);
   
   // State to manage hover timeouts
   const hoverTimeoutsRef = useRef<{ [key: number]: number }>({});
@@ -376,6 +376,7 @@ export const useMapMarkers = ({
       return;
     }
     
+    // Update markers only once per property change
     const handleMarkersAddition = () => {
       if (addMarkersToMap()) {
         setHasAddedMarkers(true);
@@ -451,7 +452,7 @@ export const useMapMarkers = ({
       }
     };
     
-  }, [map, properties, hasAddedMarkers, addMarkersToMap]);
+  }, [map, properties, hasAddedMarkers]);
   
   // Update marker selection state when selectedPropertyId changes
   useEffect(() => {
@@ -460,6 +461,13 @@ export const useMapMarkers = ({
     }
     
     try {
+      // Skip if selection hasn't changed to prevent loops
+      if (prevSelectedProperty.current === selectedPropertyId) {
+        return;
+      }
+      
+      console.log('Selected property changed from:', prevSelectedProperty.current, 'to:', selectedPropertyId);
+      
       // Deselect previous property marker
       if (prevSelectedProperty.current && markersRef.current[prevSelectedProperty.current]) {
         updateMarkerState(markersRef.current[prevSelectedProperty.current], false);
